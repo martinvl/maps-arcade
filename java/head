@@ -1,0 +1,21 @@
+import java.util.Scanner;
+
+public class Solver {
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+
+        double runningTime = 0;
+
+        int n = input.nextInt();
+
+        long start = System.nanoTime();
+        long sum = sumEven(n);
+        long end = System.nanoTime();
+
+        System.out.println(sum);
+        runningTime = ((double)(end - start)) / Math.pow(10, 9);
+
+        System.err.println(runningTime);
+    }
+
+    static
