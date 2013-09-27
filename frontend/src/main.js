@@ -1,5 +1,6 @@
 var io = require('socket.io-client');
 
+var nameField = document.getElementById('name_field');
 var languageSelect = document.getElementById('language_select');
 var codeBodyArea = document.getElementById('code_body_area');
 var sendButton = document.getElementById('send_button');
@@ -14,6 +15,7 @@ var pythonBody = "def sum_even(n):\n ";
 
 updateBody();
 
+nameField.onchange = sendHandshake;
 languageSelect.onchange = updateBody;
 sendButton.onclick = sendBody;
 
@@ -49,9 +51,14 @@ socket.on('result', function (result) {
     }
 });
 
+function sendHandshake() {
+    socket.emit('handshake', {name:nameField.value});
+}
+
 function sendBody() {
     statusField.innerHTML = '';
     socket.emit('evaluate', {
+        problemID:'problem1',
         language:languageSelect.value,
         codeBody:codeBodyArea.value
     });

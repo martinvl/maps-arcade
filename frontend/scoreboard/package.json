@@ -1,0 +1,7 @@
+{
+    "dependencies":{
+        "objsync":">=0.1",
+        "socket.io-client":">=0.9",
+        "underscore":">=1.5"
+    }
+}

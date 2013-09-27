@@ -1,6 +1,7 @@
 node_modules
-frontend/main.js
+frontend/bundle.js
+frontend/scoreboard/bundle.js
 */bin
 */compilation.log
 */stage
-frontend/bundle.js
+results
