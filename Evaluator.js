@@ -41,13 +41,15 @@ Evaluator.prototype.buildJava = function (codeBody, callback) {
             return;
         }
 
-        exec('javac stage/Solver.java -d bin &> compilation.log', function (error) {
+        exec('javac stage/Solver.java -d bin', function (error, stdout, stderr) {
             if (error) {
                 callback('Compilation failed');
                 return;
             }
 
             callback();
+            exec('echo "' + stdout.toString() + '" >> compilation.log');
+            exec('echo "' + stderr.toString() + '" >> compilation.log');
         });
     };
 
@@ -116,13 +118,15 @@ Evaluator.prototype.buildC = function (codeBody, callback) {
             return;
         }
 
-        exec('gcc -std=gnu99 -O2 stage/solver.c -o bin/solver -lrt &> compilation.log', function (error) {
+        exec('gcc -std=gnu99 -O2 stage/solver.c -o bin/solver -lrt', function (error, stdout, stderr) {
             if (error) {
                 callback('Compilation failed');
                 return;
             }
 
             callback();
+            exec('echo "' + stdout.toString() + '" >> compilation.log');
+            exec('echo "' + stderr.toString() + '" >> compilation.log');
         });
     };
 
