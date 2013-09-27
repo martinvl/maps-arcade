@@ -5,6 +5,9 @@
         "express":">=3.0",
         "nedb":">=0.8",
         "objdist":">=0.1",
-        "socket.io":">=0.9"
+        "objsync":">=0.1",
+        "socket.io":">=0.9",
+        "socket.io-client":">=0.9",
+        "underscore":">=1.5"
     }
 }
