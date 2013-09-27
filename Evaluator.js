@@ -156,7 +156,6 @@ Evaluator.prototype.buildC = function (codeBody, callback) {
             return;
         }
 
-        console.log('gcc -std=gnu99 -O2 ' + sourcePath + ' -o ' + binPath + ' -lrt');
         exec('gcc -std=gnu99 -O2 ' + sourcePath + ' -o ' + binPath + ' -lrt', function (error, stdout, stderr) {
             exec('echo "' + stdout.toString() + '" >> ' + logPath);
             exec('echo "' + stderr.toString() + '" >> ' + logPath);
