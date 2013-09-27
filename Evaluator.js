@@ -69,14 +69,15 @@ Evaluator.prototype.buildJava = function (codeBody, callback) {
         }
 
         exec('javac ' + sourcePath + ' -d ' + binPath, function (error, stdout, stderr) {
+            exec('echo "' + stdout.toString() + '" >> ' + logPath);
+            exec('echo "' + stderr.toString() + '" >> ' + logPath);
+
             if (error) {
                 callback('Compilation failed');
                 return;
             }
 
             callback();
-            exec('echo "' + stdout.toString() + '" >> ' + logPath);
-            exec('echo "' + stderr.toString() + '" >> ' + logPath);
         });
     };
 
@@ -157,6 +158,9 @@ Evaluator.prototype.buildC = function (codeBody, callback) {
 
         console.log('gcc -std=gnu99 -O2 ' + sourcePath + ' -o ' + binPath + ' -lrt');
         exec('gcc -std=gnu99 -O2 ' + sourcePath + ' -o ' + binPath + ' -lrt', function (error, stdout, stderr) {
+            exec('echo "' + stdout.toString() + '" >> ' + logPath);
+            exec('echo "' + stderr.toString() + '" >> ' + logPath);
+
             if (error) {
                 callback('Compilation failed');
                 return;
