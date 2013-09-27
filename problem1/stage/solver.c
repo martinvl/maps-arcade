@@ -1,28 +1,26 @@
 #include <stdio.h>
-#include <sys/time.h>
+#include <time.h>
 
 long sumEven(long n)
 {
-n = (n - 1)/2;
-return (n + 1)*n;
 }
 
 int main(int argc, char* argv[])
 {
-    struct timeval start, end;
+    struct timespec start, end;
     long n;
 
     scanf("%ld", &n);
 
-    gettimeofday(&start, 0);
+    clock_gettime(CLOCK_REALTIME, &start);
     long sum = sumEven(n);
-    gettimeofday(&end, 0);
+    clock_gettime(CLOCK_REALTIME, &end);
 
     printf("%ld\n", sum);
 
     long secs = end.tv_sec - start.tv_sec;
-    long millisecs = end.tv_usec - start.tv_usec;
-    double running_time = ((double)(secs*1000000 + millisecs)) / 1000000;
+    long nanosecs = end.tv_nsec - start.tv_nsec;
+    double running_time = ((double)(secs*1000000000 + nanosecs)) / 1000000000;
 
     fprintf(stderr, "%f\n", running_time);
 

@@ -1,11 +1,29 @@
 var exec = require('child_process').exec;
+var path = require('path');
 
 var TIMEOUT = 5 * 1000;
 
-function Evaluator() {
+function Evaluator(root) {
+    this.root = root;
+    this.setup();
 }
 
 module.exports = Evaluator;
+
+Evaluator.prototype.setup = function () {
+    exec('mkdir ' + this.getPath('stage'));
+    exec('mkdir ' + this.getPath('bin'));
+};
+
+Evaluator.prototype.teardown = function () {
+    exec('rm -rf ' + this.getPath('stage'));
+    exec('rm -rf ' + this.getPath('bin'));
+};
+
+Evaluator.prototype.clean = function () {
+    exec('rm -f ' + this.getPath('stage/*'));
+    exec('rm -f ' + this.getPath('bin/*'));
+};
 
 Evaluator.prototype.evaluateJava = function (codeBody, statusCallback, callback) {
     this.evaluate(codeBody, this.buildJava, this.testJava, statusCallback, callback);
@@ -28,28 +46,37 @@ Evaluator.prototype.evaluate = function (codeBody, build, test, statusCallback, 
             callback(false, error);
         } else {
             statusCallback('Testing...');
-            test.apply(self, [statusCallback, callback]);
+            test.apply(self, [statusCallback, function (accepted, message, runningTime) {
+                self.clean();
+                callback(accepted, message, runningTime);
+            }]);
         }
     }]);
 };
 
 
 Evaluator.prototype.buildJava = function (codeBody, callback) {
+    var sourcePath = this.getPath('stage/Solver.java');
+    var headPath = this.getPath('java/head');
+    var tailPath = this.getPath('java/tail');
+    var logPath = this.getPath('compilation.log');
+    var binPath = this.getPath('bin');
+
     var compile = function (error) {
         if (error) {
             callback('Compilation failed');
             return;
         }
 
-        exec('javac stage/Solver.java -d bin', function (error, stdout, stderr) {
+        exec('javac ' + sourcePath + ' -d ' + binPath, function (error, stdout, stderr) {
             if (error) {
                 callback('Compilation failed');
                 return;
             }
 
             callback();
-            exec('echo "' + stdout.toString() + '" >> compilation.log');
-            exec('echo "' + stderr.toString() + '" >> compilation.log');
+            exec('echo "' + stdout.toString() + '" >> ' + logPath);
+            exec('echo "' + stderr.toString() + '" >> ' + logPath);
         });
     };
 
@@ -59,7 +86,7 @@ Evaluator.prototype.buildJava = function (codeBody, callback) {
             return;
         }
 
-        exec('cat java/tail >> stage/Solver.java', compile);
+        exec('cat ' + tailPath + ' >> ' + sourcePath, compile);
     };
 
     var addBody = function (error) {
@@ -68,24 +95,28 @@ Evaluator.prototype.buildJava = function (codeBody, callback) {
             return;
         }
 
-        exec('echo "' + codeBody + '" >> stage/Solver.java', addTail);
+        exec('echo "' + codeBody + '" >> ' + sourcePath, addTail);
     };
 
     var addHead = function (error) {
-        exec('cat java/head >> stage/Solver.java', addBody);
+        exec('cat ' + headPath + ' >> ' + sourcePath, addBody);
     };
 
-    exec('rm stage/Solver.java', addHead);
+    exec('rm ' + sourcePath, addHead);
 };
 
 Evaluator.prototype.buildPython = function (codeBody, callback) {
+    var headPath = this.getPath('python/head');
+    var tailPath = this.getPath('python/tail');
+    var binPath = this.getPath('bin/solver.py');
+
     var addTail = function (error) {
         if (error) {
             callback('Assembly failed');
             return;
         }
 
-        exec('cat python/tail >> bin/solver.py', function (error) {
+        exec('cat ' + tailPath + ' >> ' + binPath, function (error) {
             if (error) {
                 callback('Assembly failed');
                 return;
@@ -101,32 +132,37 @@ Evaluator.prototype.buildPython = function (codeBody, callback) {
             return;
         }
 
-        exec('echo "' + codeBody + '" >> bin/solver.py', addTail);
+        exec('echo "' + codeBody + '" >> ' + binPath, addTail);
     };
 
     var addHead = function (error) {
-        exec('cat python/head >> bin/solver.py', addBody);
+        exec('cat ' + headPath + ' >> ' + binPath, addBody);
     };
 
-    exec('rm bin/solver.py', addHead);
+    exec('rm ' + binPath, addHead);
 };
 
 Evaluator.prototype.buildC = function (codeBody, callback) {
+    var sourcePath = this.getPath('stage/solver.c');
+    var headPath = this.getPath('c/head');
+    var tailPath = this.getPath('c/tail');
+    var logPath = this.getPath('compilation.log');
+    var binPath = this.getPath('bin/solver');
+
     var compile = function (error) {
         if (error) {
             callback('Compilation failed');
             return;
         }
 
-        exec('gcc -std=gnu99 -O2 stage/solver.c -o bin/solver -lrt', function (error, stdout, stderr) {
+        console.log('gcc -std=gnu99 -O2 ' + sourcePath + ' -o ' + binPath + ' -lrt');
+        exec('gcc -std=gnu99 -O2 ' + sourcePath + ' -o ' + binPath + ' -lrt', function (error, stdout, stderr) {
             if (error) {
                 callback('Compilation failed');
                 return;
             }
 
             callback();
-            exec('echo "' + stdout.toString() + '" >> compilation.log');
-            exec('echo "' + stderr.toString() + '" >> compilation.log');
         });
     };
 
@@ -136,7 +172,7 @@ Evaluator.prototype.buildC = function (codeBody, callback) {
             return;
         }
 
-        exec('cat c/tail >> stage/solver.c', compile);
+        exec('cat ' + tailPath + ' >> ' + sourcePath, compile);
     };
 
     var addBody = function (error) {
@@ -145,26 +181,29 @@ Evaluator.prototype.buildC = function (codeBody, callback) {
             return;
         }
 
-        exec('echo "' + codeBody + '" >> stage/solver.c', addTail);
+        exec('echo "' + codeBody + '" >> ' + sourcePath, addTail);
     };
 
     var addHead = function (error) {
-        exec('cat c/head >> stage/solver.c', addBody);
+        exec('cat ' + headPath + ' >> ' + sourcePath, addBody);
     };
 
-    exec('rm stage/solver.c', addHead);
+    exec('rm ' + sourcePath, addHead);
 };
 
 Evaluator.prototype.testJava = function (statusCallback, callback) {
-    this.test('java -cp "bin" Solver', statusCallback, callback);
+    var classPath = this.getPath('bin');
+    this.test('java -cp "' + classPath + '" Solver', statusCallback, callback);
 };
 
 Evaluator.prototype.testPython = function (statusCallback, callback) {
-    this.test('python bin/solver.py', statusCallback, callback);
+    var binPath = this.getPath('bin/solver.py');
+    this.test('python ' + binPath, statusCallback, callback);
 };
 
 Evaluator.prototype.testC = function (statusCallback, callback) {
-    this.test('bin/solver', statusCallback, callback);
+    var binPath = this.getPath('bin/solver');
+    this.test(binPath, statusCallback, callback);
 };
 
 Evaluator.prototype.test = function (command, statusCallback, callback) {
@@ -197,8 +236,8 @@ Evaluator.prototype.test = function (command, statusCallback, callback) {
 };
 
 Evaluator.prototype.executeTest = function (testID, command, callback) {
-    var inputPath = 'testdata/test' + testID + '.in';
-    var answerPath = 'testdata/test' + testID + '.ans';
+    var inputPath = this.getPath('testdata/test' + testID + '.in');
+    var answerPath = this.getPath('testdata/test' + testID + '.ans');
 
     exec(command + ' < ' + inputPath, {timeout:TIMEOUT}, function (error, stdout, stderr) {
         if (error) {
@@ -226,4 +265,8 @@ Evaluator.prototype.executeTest = function (testID, command, callback) {
         }
 
     });
+};
+
+Evaluator.prototype.getPath = function (relativePath) {
+    return path.resolve(this.root, relativePath);
 };

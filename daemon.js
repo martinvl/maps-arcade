@@ -19,7 +19,7 @@ server.listen(PORT);
 // --- Setup socket.io ---
 var transport = io.listen(server);
 
-var evaluator = new Evaluator();
+var evaluator = new Evaluator('problem1');
 
 transport.sockets.on('connection', function (socket) {
     socket.on('evaluate', function (data) {
