@@ -1,4 +1,6 @@
 {
+    "name":"maps-arcade",
+    "version":"0.1.0b-1",
     "dependencies":{
         "express":">=3.0",
         "socket.io":">=0.9"
