@@ -1,5 +1,6 @@
 node_modules
 frontend/main.js
-bin/*
-compilation.log
+*/bin
+*/compilation.log
+*/stage
 frontend/bundle.js
