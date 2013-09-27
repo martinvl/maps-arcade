@@ -70,11 +70,6 @@ Evaluator.prototype.buildJava = function (codeBody, callback) {
     };
 
     var addHead = function (error) {
-        if (error) {
-            callback('Assembly failed');
-            return;
-        }
-
         exec('cat java/head >> stage/Solver.java', addBody);
     };
 
@@ -108,11 +103,6 @@ Evaluator.prototype.buildPython = function (codeBody, callback) {
     };
 
     var addHead = function (error) {
-        if (error) {
-            callback('Assembly failed');
-            return;
-        }
-
         exec('cat python/head >> bin/solver.py', addBody);
     };
 
@@ -155,11 +145,6 @@ Evaluator.prototype.buildC = function (codeBody, callback) {
     };
 
     var addHead = function (error) {
-        if (error) {
-            callback('Assembly failed');
-            return;
-        }
-
         exec('cat c/head >> stage/solver.c', addBody);
     };
 
