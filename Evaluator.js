@@ -116,7 +116,7 @@ Evaluator.prototype.buildC = function (codeBody, callback) {
             return;
         }
 
-        exec('gcc -std=c99 -O2 stage/solver.c -o bin/solver &> compilation.log', function (error) {
+        exec('gcc -std=gnu99 -O2 stage/solver.c -o bin/solver -lrt &> compilation.log', function (error) {
             if (error) {
                 callback('Compilation failed');
                 return;
