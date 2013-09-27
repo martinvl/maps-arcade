@@ -62,6 +62,7 @@ transport.sockets.on('connection', function (socket) {
                     problemID:data.problemID,
                     accepted:accepted,
                     runningTime:runningTime,
+                    language:data.language,
                     name:userData.name
                 });
             }
