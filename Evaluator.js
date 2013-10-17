@@ -38,16 +38,33 @@ Evaluator.prototype.evaluateC = function (codeBody, statusCallback, callback) {
 };
 
 Evaluator.prototype.evaluate = function (codeBody, build, test, statusCallback, callback) {
-    statusCallback('Compiling...');
+    statusCallback({mode:'compilation', pending:true});
     var self = this;
 
     build.apply(this, [codeBody, function (error) {
         if (error) {
+            statusCallback({mode:'compilation', success:false});
             callback(false, error);
         } else {
-            statusCallback('Testing...');
+            statusCallback({mode:'compilation', success:true});
+            statusCallback({mode:'testing', pending:true});
+
             test.apply(self, [statusCallback, function (accepted, message, runningTime) {
                 self.clean();
+
+                if (accepted) {
+                    statusCallback({
+                        mode:'testing',
+                        success:true,
+                        runningTime:runningTime
+                    });
+                } else {
+                    statusCallback({
+                        mode:'testing',
+                        success:false
+                    });
+                }
+
                 callback(accepted, message, runningTime);
             }]);
         }
@@ -211,7 +228,7 @@ Evaluator.prototype.testC = function (statusCallback, callback) {
 
 Evaluator.prototype.test = function (command, statusCallback, callback) {
     var numTests = 8;
-    var numCorrect = 0;
+    var numPassed = 0;
     var totalRunningTime = 0;
     var failed = false;
 
@@ -222,12 +239,17 @@ Evaluator.prototype.test = function (command, statusCallback, callback) {
             }
 
             if (accepted) {
-                ++numCorrect;
+                ++numPassed;
                 totalRunningTime += runningTime;
 
-                statusCallback('Passed test ' + numCorrect + '/' + numTests);
+                statusCallback({
+                    mode:'testing',
+                    pending:true,
+                    numPassed:numPassed,
+                    numTests:numTests
+                });
 
-                if (numCorrect == numTests) {
+                if (numPassed == numTests) {
                     callback(true, 'Accepted', totalRunningTime);
                 }
             } else {

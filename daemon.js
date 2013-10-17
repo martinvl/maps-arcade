@@ -40,19 +40,21 @@ transport.sockets.on('connection', function (socket) {
 
     socket.on('evaluate', function (data) {
         if (!userData) {
-            socket.emit('status', 'Needs handshake');
+            socket.emit('status', {mode:'submission', success:false, message:'Needs handshake'});
             return;
         }
 
-        var handleStatus = function (message) {
-            socket.emit('status', message);
+        socket.emit('status', {mode:'submission', success:true});
+
+        var handleStatus = function (status) {
+            socket.emit('status', status);
         };
 
         var handleResult = function (accepted, message, runningTime) {
             var result = {
                 problemID:data.problemID,
-                accepted:accepted,
-                message:message
+        accepted:accepted,
+        message:message
             };
 
             if (accepted) {
