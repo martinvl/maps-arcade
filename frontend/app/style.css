@@ -191,8 +191,8 @@ input[type=text]
 
     padding-left: 5px;
     padding-right: 5px;
-    margin: 0px 10px;
-    width: 270px;
+    margin: 0px;
+    width: 290px;
     height: 32px;
 
     background-color: rgba(150, 150, 150, 0.5);
@@ -226,10 +226,20 @@ input[type=text]
 
 .select_box
 {
-    float: left;
-    margin-left: auto;
-    margin-right: auto;
-    width: 135px;
+    display: inline-block;
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 145px;
+}
+
+.select_box:first-child
+{
+    margin-left: 0px;
+}
+
+.select_box:last-child
+{
+    margin-right: 0px;
 }
 
 .select
@@ -238,21 +248,28 @@ input[type=text]
     max-height: 32px;
     line-height: 32px;
     vertical-align: middle;
-    width: 135px;
+    width: 145px;
 
     cursor: pointer;
-}
-
-.selected
-{
-    background-color: #bbb;
-    color: #222;
 }
 
 .select:hover
 {
     background-color: #999;
     color: #444;
+}
+
+
+.selected
+{
+    background-color: #BBB;
+    color: #222;
+}
+
+.selected:hover
+{
+    background-color: #BBB;
+    color: #222;
 }
 
 .button
@@ -310,6 +327,7 @@ input[type=text]
     color: #222;
     width: 120px;
     padding: 5px;
+    min-height: 18px;
     margin-left: auto;
     margin-right: auto;
     text-align: left;
@@ -327,12 +345,15 @@ input[type=text]:focus {
     border-radius: 8px;
     height: 16px;
     width: 16px;
+    margin-top: 1px;
+    /*-webkit-transition:border-color 0.2s linear;*/
     -webkit-transition:background-color 0.2s linear;
     float: right;
 }
 
 .red {
     background-color: rgba(255, 0, 0, 0.7);
+    /*border: 2px solid rgba(255, 0, 0, 0.7);*/
 }
 
 .yellow {
@@ -343,13 +364,23 @@ input[type=text]:focus {
     background-color: rgba(0, 255, 0, 0.7);
 }
 
+.ring {
+    background-color:#bbbbbb;
+    border: 2px solid #717171;
+}
+
+.disc {
+    background-color:#717171;
+    border: 2px solid #717171;
+}
+
 .narrow
 {
     width: auto;
     margin: 0px auto;
 }
 
-#editor
+.editor_container
 {
     text-align: left;
     height: 200px;
@@ -365,7 +396,7 @@ input[type=text]:focus {
     height: 100% !important;
 }
 
-#timer
+.timer
 {
     float: left;
     margin-bottom: 10px;
@@ -376,7 +407,7 @@ input[type=text]:focus {
     cursor: default;
 }
 
-#char_counter
+.char_count
 {
     float: left;
     margin-bottom: 10px;
@@ -385,4 +416,27 @@ input[type=text]:focus {
     font-size: 42px;
     font-family: "HelveticaNeue-UltraLight";
     cursor: default;
+}
+
+#status_container
+{
+    margin-left: auto;
+    margin-right: auto;
+    display: inline-block;
+}
+
+.status_container
+{
+    width: 135px;
+    float: left;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#info_box
+{
+    font-size: 14px;
+    height: 86px;
+    vertical-align: middle;
+    line-height: 19px;
 }
