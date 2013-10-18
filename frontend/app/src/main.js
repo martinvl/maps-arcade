@@ -1,3 +1,4 @@
+var io = require('socket.io-client');
 var CodeScorer = require('./CodeScorer');
 var ProblemView = require('./ProblemView');
 var SetupView = require('./SetupView');
@@ -23,8 +24,17 @@ var submissionView = new CodeScorer();
 // --- Setup StatusView ---
 var statusView = new StatusView();
 
+// --- Setup connection ---
+var socket = io.connect('/');
+
+socket.on('connect', function () {
+    console.log('Connected to server');
+});
+
 // --- Setup event handling ---
 setupView.on('next', function (setup) {
+    socket.emit('email', setup.email);
+
     submissionView.setLanguage(setup.language);
     submissionView.setEditorStyle(setup.editor);
     submissionView.setPlayer({
@@ -50,7 +60,7 @@ submissionView.on('result', function (result) {
             result.impTime + ' implementation time',
             result.runTime + ' running time',
             result.codeSize + ' characters',
-            formatStanding(result.standing) + ' place (currently)'
+            formatStanding(result.rank) + ' place (currently)'
             ];
         statusView.setScores(scores);
     } else {
