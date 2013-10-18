@@ -151,52 +151,17 @@ function addEmail(email) {
 function getRankedResults(results) {
     results = results.slice(0); // copy
 
-    var ranks = {};
-    for (var idx in results) {
-        ranks[results[idx]] = 0;
-    }
-
-    // get rank by impTime
     results.sort(function (lhs, rhs) {
-        return lhs.impTime - rhs.impTime;
-    });
+        var lhsBadness =  lhs.impTime * lhs.runTime * lhs.codeSize;
+        var rhsBadness =  rhs.impTime * rhs.runTime * rhs.codeSize;
 
-    for (var rank in results) {
-        ranks[results[rank].name] += rank;
-    }
-
-    // get rank by runTime
-    results.sort(function (lhs, rhs) {
-        return lhs.runTime - rhs.runTime;
-    });
-
-    for (var rank in results) {
-        ranks[results[rank].name] += rank;
-    }
-
-    // get rank by codeSize
-    results.sort(function (lhs, rhs) {
-        return lhs.codeSize - rhs.codeSize;
-    });
-
-    for (var rank in results) {
-        ranks[results[rank].name] += rank;
-    }
-
-    // rank overall
-    results.sort(function (lhs, rhs) {
-        var deltaRank = ranks[lhs.name] - ranks[rhs.name];
-
-        if (deltaRank == 0) {
-            return (lhs.impTime*lhs.runTime)/(rhs.impTime*rhs.runTime) - 1;
-        }
-
-        return deltaRank;
+        return lhsBadness/rhsBadness - 1;
     });
 
     for (var rank in results) {
         results[rank].rank = parseInt(rank) + 1;
     }
+
 
     return results;
 }
