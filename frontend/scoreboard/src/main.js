@@ -1,8 +1,11 @@
 var io = require('socket.io-client');
-var _ = require('underscore')._;
 var objsync = require('objsync');
+var ScoreboardView = require('./ScoreboardView');
 
 var socket = io.connect('http://' + window.location.host + '/results');
+
+var scoreboardView = new ScoreboardView();
+document.body.appendChild(scoreboardView.el);
 
 socket.on('error', function () {
     socket.socket.reconnect();
@@ -11,20 +14,5 @@ socket.on('error', function () {
 var sync = new objsync(socket, {delimiter:'/'});
 
 sync.on('update', function () {
-    showResults(sync.getObject());
+    scoreboardView.setScores(sync.getObject());
 });
-
-function showResults(results) {
-    results = _.sortBy(results, function (result) {
-        return result.rank;
-    });
-    var displayText = '';
-
-    for (var idx in results) {
-        var result = results[idx];
-
-        displayText += result.name + ' ' + result.language + ' ' + result.impTime + ' ' + result.runTime + ' ' + result.codeSize + ' chars<br/>';
-    }
-
-    document.body.innerHTML = displayText;
-}
