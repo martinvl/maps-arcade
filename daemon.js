@@ -53,12 +53,15 @@ transport.sockets.on('connection', function (socket) {
         var handleResult = function (accepted, message, runningTime) {
             var result = {
                 problemID:data.problemID,
-        accepted:accepted,
-        message:message
+                accepted:accepted,
+                message:message
             };
 
             if (accepted) {
-                result.runningTime = runningTime;
+                result.runTime = formatTime(runningTime);
+                result.impTime = formatTime(data.impTime);
+                result.codeSize = codeSize(data.codeBody);
+                result.standing = 1; // XXX
 
                 addResult({
                     problemID:data.problemID,
@@ -119,4 +122,30 @@ function publishResults() {
 
         dist.setObject(results);
     });
+}
+
+function formatTime(time) {
+    var formattedTime = '';
+
+    if (time < 1/1000) {
+        formattedTime = Math.round(time*1000000) + '&mu;s';
+    } else if (time < 1/10) {
+        formattedTime = Math.round(time*1000) + 'ms';
+    } else {
+        time = Math.round(time*100)/100;
+
+        if (time == Math.round(time)) {
+            formattedTime = time + '.00s';
+        } else if (time == Math.round(time*10)/10) {
+            formattedTime = time + '0s';
+        } else {
+            formattedTime = time + 's';
+        }
+    }
+
+    return formattedTime;
+}
+
+function codeSize(code) {
+    return code.replace(/\s/g, '').length;
 }

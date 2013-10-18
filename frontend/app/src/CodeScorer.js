@@ -1,3 +1,6 @@
+var io = require('socket.io-client');
+var EventEmitter = require('events').EventEmitter;
+var inherits = require('inherits');
 var CodeMirror = require('code-mirror');
 require('code-mirror/mode/python.js');
 require('code-mirror/mode/clike.js');
@@ -5,56 +8,53 @@ require('code-mirror/addon/edit/closebrackets.js');
 require('code-mirror/keymap/vim.js');
 require('code-mirror/keymap/emacs.js');
 
-var io = require('socket.io-client');
+var TimerView = require('./TimerView');
 
+var TIMEOUT = 60;
 var PYTHON_DEFAULT = 'def sum_even(n):';
 var C_DEFAULT = 'long sumEven(long n)\n{\n}';
 var JAVA_DEFAULT = 'public long sumEven(long n) {\n}';
-var TIMER_INTERVAL = 30 / 1000;
 
-function CodeScorer(el) {
-    this.el = el;
+function CodeScorer() {
     this.setup();
     this.reset();
 }
 
+inherits(CodeScorer, EventEmitter);
 module.exports = CodeScorer;
 
 // ----- Setup -----
 CodeScorer.prototype.setup = function () {
-    this.setupEl();
-    this.setupTimer();
+    this.hasStartedCoding = false;
+
+    this.el = document.createElement('div');
+    this.el.className = 'big_box wide centered_container';
+
+    this.setupTimerView();
+    this.setupCharCountField();
+    this.el.appendChild(createClear());
+    this.setupEditor();
+    this.setupSubmitButton();
+    this.setupStatus();
+
     this.setupConnection();
 };
 
-CodeScorer.prototype.setupEl = function () {
-    this.el.className = 'big_box wide centered_container';
+CodeScorer.prototype.setupTimerView = function () {
+    this.timerView = new TimerView(TIMEOUT);
+    this.el.appendChild(this.timerView.el);
 
-    this.setupTimerField();
-    this.setupCharCountField();
-    this.el.appendChild(this.timerField);
-    this.el.appendChild(this.charCountField);
-    this.el.appendChild(createClear());
-
-    this.setupEditor();
-
-    this.setupSubmitButton();
-    this.el.appendChild(this.submitButton);
-
-    this.setupStatus();
-    this.el.appendChild(this.statusContainer);
-};
-
-CodeScorer.prototype.setupTimerField = function () {
-    this.timerField = document.createElement('div');
-    this.timerField.className = 'timer';
-    this.timerField.innerHTML = '00.00s'; // XXX
+    var self = this;
+    this.timerView.on('timeout', function () {
+        self.timeout();
+    });
 };
 
 CodeScorer.prototype.setupCharCountField = function () {
     this.charCountField = document.createElement('div');
     this.charCountField.className = 'char_count';
-    this.charCountField.innerHTML = '60'; // XXX
+
+    this.el.appendChild(this.charCountField);
 };
 
 CodeScorer.prototype.setupEditor = function () {
@@ -70,9 +70,6 @@ CodeScorer.prototype.setupEditor = function () {
         lineNumbers:true,
         autofocus:true,
         autoCloseBrackets:true,
-        value:'public static void main(String[] args) {\n}',
-        keyMap:'vim',
-        mode:'text/x-java',
         theme:'base16-dark'
     });
 
@@ -86,8 +83,9 @@ CodeScorer.prototype.setupEditor = function () {
 
         var isInputChange = (obj.origin == '+input' || obj.origin == '-input');
 
-        if (isInputChange && !self.timer.running) {
-            self.startTimer();
+        if (isInputChange && !self.hasStartedCoding) {
+            self.hasStartedCoding = true;
+            self.timerView.startTimer();
         }
     });
 };
@@ -101,6 +99,8 @@ CodeScorer.prototype.setupSubmitButton = function () {
     this.submitButton.onclick = function () {
         self.submit();
     };
+
+    this.el.appendChild(this.submitButton);
 };
 
 CodeScorer.prototype.setupStatus = function () {
@@ -115,6 +115,8 @@ CodeScorer.prototype.setupStatus = function () {
     this.statusContainer.appendChild(this.configView);
     this.statusContainer.appendChild(this.statusView);
     this.statusContainer.appendChild(createClear());
+
+    this.el.appendChild(this.statusContainer);
 };
 
 CodeScorer.prototype.setupInfoView = function () {
@@ -141,7 +143,7 @@ CodeScorer.prototype.setupConfigView = function () {
     this.configView.appendChild(header);
 
     this.nicknameField = document.createElement('div');
-    this.nicknameField.className = 'info_part top';
+    this.nicknameField.className = 'info_part top selected';
     this.nicknameField.style.textAlign = 'center'; // XXX
     this.nicknameField.innerHTML = 'martinvl'; // XXX
     this.configView.appendChild(this.nicknameField);
@@ -168,7 +170,7 @@ CodeScorer.prototype.setupStatusView = function () {
     this.statusView.appendChild(header);
 
     var submissionField = document.createElement('div');
-    submissionField.className = 'info_part top';
+    submissionField.className = 'info_part top selected';
     this.submissionIndicator = document.createElement('div');
     updateIndicator(this.submissionIndicator, 'failed');
     submissionField.appendChild(this.submissionIndicator);
@@ -176,7 +178,7 @@ CodeScorer.prototype.setupStatusView = function () {
     this.statusView.appendChild(submissionField);
 
     var compilationField = document.createElement('div');
-    compilationField.className = 'info_part middle';
+    compilationField.className = 'info_part middle selected';
     this.compilationIndicator = document.createElement('div');
     updateIndicator(this.compilationIndicator, 'failed');
     compilationField.appendChild(this.compilationIndicator);
@@ -184,7 +186,7 @@ CodeScorer.prototype.setupStatusView = function () {
     this.statusView.appendChild(compilationField);
 
     var testingField = document.createElement('div');
-    testingField.className = 'info_part bottom';
+    testingField.className = 'info_part bottom selected';
     this.testingIndicator = document.createElement('div');
     updateIndicator(this.testingIndicator, 'failed');
     testingField.appendChild(this.testingIndicator);
@@ -253,9 +255,14 @@ CodeScorer.prototype.setEditorStyle = function (editorStyle) {
 };
 
 CodeScorer.prototype.reset = function () {
+    this.timerView.reset();
+    this.setLocked(false);
+
     this.setPlayer();
     this.setLanguage();
     this.setEditorStyle();
+
+    this.hasStartedCoding = false;
 };
 
 CodeScorer.prototype.focus = function () {
@@ -267,69 +274,38 @@ CodeScorer.prototype.refresh = function () {
 };
 
 // ----- State handling -----
-CodeScorer.prototype.setupTimer = function () {
-    this.timer = {
-        start:0,
-        end:0,
-        running:false
-    };
-
-    this.timerTick();
+CodeScorer.prototype.timeout = function () {
+    this.setLocked(true);
+    this.emit('result', {timeout:true});
 };
 
-CodeScorer.prototype.startTimer = function () {
-    this.timer.start = new Date();
-    this.timer.running = true;
-
-    var self = this;
-    this.timer.interval = setInterval(function () {
-        self.timerTick();
-    }, TIMER_INTERVAL);
-
-    this.timerTick();
-};
-
-CodeScorer.prototype.stopTimer = function () {
-    this.timer.end = new Date();
-    this.timer.running = false;
-    clearInterval(this.timer.interval);
-
-    if (this.timer.start == 0) {
-        this.timer.start = this.timer.end;
-    }
-
-    this.timerTick();
-};
-
-CodeScorer.prototype.timerTick = function () {
-    var end = this.timer.running ? new Date() : this.timer.end;
-    var elapsed = Math.round((60000 - (end - this.timer.start))/10)/100;
-
-    var time = elapsed;
-
-    if (Math.round(elapsed) == elapsed) {
-        time += '.00';
-    } else if (Math.round(elapsed*10)/10 == elapsed) {
-        time += '0';
-    }
-
-    this.timerField.innerHTML = time + 's';
+CodeScorer.prototype.currentCharCount = function () {
+    return this.editor.getValue().replace(/\s/g, '').length;
 };
 
 CodeScorer.prototype.updateCharCount = function () {
-    var charCount = this.editor.getValue().replace(/\s/g, '').length;
-    this.charCountField.innerHTML = charCount;
+    this.charCountField.innerHTML = this.currentCharCount();
 };
 
 CodeScorer.prototype.submit = function () {
-    this.stopTimer();
-    this.editor.setOption('readOnly', 'nocursor');
+    this.setLocked(true);
 
     updateIndicator(this.submissionIndicator, 'pending');
     updateIndicator(this.compilationIndicator, 'failed');
     updateIndicator(this.testingIndicator, 'failed');
 
     this.sendCodeBody();
+};
+
+CodeScorer.prototype.setLocked = function (locked) {
+    if (locked) {
+        this.timerView.stopTimer();
+        this.editor.setOption('readOnly', 'nocursor');
+    } else {
+        this.timerView.continueTimer();
+        this.editor.setOption('readOnly', false);
+        this.editor.focus();
+    }
 };
 
 // ----- Connection stuff -----
@@ -367,10 +343,10 @@ CodeScorer.prototype.setupConnection = function () {
     });
 
     this.socket.on('result', function (result) {
-        console.log('Result: ' + result.message);
-
         if (result.accepted) {
-            console.log('Accepted');
+            self.emit('result', result);
+        } else {
+            self.setLocked(false);
         }
     });
 };
@@ -385,6 +361,7 @@ CodeScorer.prototype.sendCodeBody = function () {
     this.socket.emit('evaluate', {
         problemID:'problem1',
         language:this.language,
+        impTime:this.timerView.getTime(),
         codeBody:this.editor.getValue()
     });
 };

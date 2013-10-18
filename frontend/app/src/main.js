@@ -1,6 +1,7 @@
 var CodeScorer = require('./CodeScorer');
 var ProblemView = require('./ProblemView');
 var SetupView = require('./SetupView');
+var StatusView = require('./StatusView');
 
 var container = document.createElement('div');
 container.className = 'container';
@@ -17,8 +18,10 @@ var examples = [
 ];
 var problemView = new ProblemView(problem, examples);
 
-var el = document.createElement('div');
-var submissionView = new CodeScorer(el);
+var submissionView = new CodeScorer();
+
+// --- Setup StatusView ---
+var statusView = new StatusView();
 
 // --- Setup event handling ---
 setupView.on('next', function (setup) {
@@ -38,14 +41,43 @@ problemView.on('next', function () {
     setSubmissionViewVisible(true);
 });
 
-setSetupViewVisible(true);
+submissionView.on('result', function (result) {
+    if (result.accepted) {
+        statusView.setTitle('Accepted');
+        statusView.setSuccess(true);
+
+        var scores = [
+            result.impTime + ' implementation time',
+            result.runTime + ' running time',
+            result.codeSize + ' characters',
+            formatStanding(result.standing) + ' place (currently)'
+            ];
+        statusView.setScores(scores);
+    } else {
+        statusView.setTitle('Timeout');
+        statusView.setSuccess(false);
+    }
+
+    setTimeout(function () {
+        setSubmissionViewVisible(false);
+        setStatusViewVisible(true);
+
+        setTimeout(function () {
+            reset();
+        }, 7000);
+    }, 2000);
+});
+
+reset();
 
 function setSetupViewVisible(visible) {
     if (visible) {
         container.appendChild(setupView.el);
         setupView.focus();
     } else {
-        container.removeChild(setupView.el);
+        try {
+            container.removeChild(setupView.el);
+        } catch (e) {}
     }
 }
 
@@ -53,7 +85,9 @@ function setProblemViewVisible(visible) {
     if (visible) {
         container.appendChild(problemView.el);
     } else {
-        container.removeChild(problemView.el);
+        try {
+            container.removeChild(problemView.el);
+        } catch (e) {}
     }
 }
 
@@ -63,6 +97,50 @@ function setSubmissionViewVisible(visible) {
         submissionView.refresh();
         submissionView.focus();
     } else {
-        container.removeChild(submissionView.el);
+        try {
+            container.removeChild(submissionView.el);
+        } catch (e) {}
     }
+}
+
+function setStatusViewVisible(visible) {
+    if (visible) {
+        container.appendChild(statusView.el);
+    } else {
+        try {
+            container.removeChild(statusView.el);
+        } catch (e) {}
+    }
+}
+
+function formatStanding(standing) {
+    switch (standing % 10) {
+        case 1:
+            standing += 'st';
+            break;
+        case 2:
+            standing += 'nd';
+            break;
+        case 3:
+            standing += 'rd';
+            break;
+        default:
+            standing += 'th';
+            break;
+    }
+
+    return standing;
+}
+
+function reset() {
+    setSetupViewVisible(false);
+    setProblemViewVisible(false);
+    setSubmissionViewVisible(false);
+    setStatusViewVisible(false);
+
+    setupView.reset();
+    submissionView.reset();
+    statusView.reset();
+
+    setSetupViewVisible(true);
 }

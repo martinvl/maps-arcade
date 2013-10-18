@@ -93,11 +93,11 @@ SetupView.prototype.inputValid = function () {
 };
 
 SetupView.prototype.showNeedsNickname = function () {
-    this.nicknameField.className = 'top' + (this.nicknameValid() ? '' : ' incorrect');
+    this.nicknameField.className = 'top' + (this.nicknameValid() ? '' : ' invalid');
 };
 
 SetupView.prototype.showNeedsEmail = function () {
-    this.emailField.className = 'bottom' + (this.emailValid() ? '' : ' incorrect');
+    this.emailField.className = 'bottom' + (this.emailValid() ? '' : ' invalid');
 };
 
 SetupView.prototype.showNeedsInput = function () {
@@ -142,6 +142,13 @@ SetupView.prototype.getSetup = function () {
     };
 
     return setup;
+};
+
+SetupView.prototype.reset = function () {
+    this.nicknameField.value = '';
+    this.emailField.value = '';
+    this.languageSelectView.reset();
+    this.editorSelectView.reset();
 };
 
 SetupView.prototype.focus = function () {

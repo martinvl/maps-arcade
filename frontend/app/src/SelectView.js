@@ -7,7 +7,7 @@ function SelectView(title, options) {
     this.options = options;
     this.setup();
 
-    this.selectOption(0);
+    this.reset();
 }
 
 inherits(SelectView, EventEmitter);
@@ -48,6 +48,10 @@ SelectView.prototype.setup = function () {
         this.el.appendChild(optionView.el);
         this.optionViews.push(optionView);
     }
+};
+
+SelectView.prototype.reset = function () {
+    this.selectOption(0);
 };
 
 SelectView.prototype.selectOption = function (selectedIndex) {
