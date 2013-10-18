@@ -137,7 +137,7 @@ CodeScorer.prototype.setupConfigView = function () {
     this.configView.className = 'status_container';
 
     var header = document.createElement('h3');
-    header.innerHTML = 'Config';
+    header.innerHTML = 'Setup';
     this.configView.appendChild(header);
 
     this.nicknameField = document.createElement('div');
