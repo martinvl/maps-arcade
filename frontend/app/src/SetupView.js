@@ -56,11 +56,11 @@ SetupView.prototype.setupSelect = function () {
 SetupView.prototype.setupSubmitButton = function () {
     this.submitButton = document.createElement('div');
     this.submitButton.className = 'button wide';
-    this.submitButton.innerHTML = 'Submit';
+    this.submitButton.innerHTML = 'Next';
 
     var self = this;
     this.submitButton.onclick = function () {
-        self.emit('submit', self.getSetup());
+        self.emit('next', self.getSetup());
     };
 };
 
