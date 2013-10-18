@@ -28,8 +28,7 @@ CodeScorer.prototype.setup = function () {
 };
 
 CodeScorer.prototype.setupEl = function () {
-    this.el.className = 'big_box wide';
-    this.el.style.height = '438px'; // XXX
+    this.el.className = 'big_box wide centered_container';
 
     this.setupTimerField();
     this.setupCharCountField();
@@ -261,6 +260,10 @@ CodeScorer.prototype.reset = function () {
 
 CodeScorer.prototype.focus = function () {
     this.editor.focus();
+};
+
+CodeScorer.prototype.refresh = function () {
+    this.editor.refresh();
 };
 
 // ----- State handling -----

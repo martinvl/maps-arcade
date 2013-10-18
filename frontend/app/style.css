@@ -51,7 +51,7 @@ html, body
 h3
 {
     margin-top: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 0px;
     font-family: "HelveticaNeue-UltraLight";
     font-weight: 300;
 }
@@ -183,12 +183,18 @@ input[type=text]
     color: rgb(200, 200, 200);
 }
 
+input[type=text].incorrect
+{
+    background-color: rgba(150, 0, 0, 0.5);
+}
+
 .top
 {
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
     border: none;
     border-bottom: 1px rgb(80, 80, 80) solid;
+    margin-top: 10px;
 }
 
 .middle

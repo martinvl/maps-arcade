@@ -2,8 +2,7 @@ var EventEmitter = require('events').EventEmitter;
 var inherits = require('inherits');
 var SelectView = require('./SelectView');
 
-function SetupView(el) {
-    this.el = el;
+function SetupView() {
     this.setup();
 }
 
@@ -11,8 +10,8 @@ inherits(SetupView, EventEmitter);
 module.exports = SetupView;
 
 SetupView.prototype.setup = function () {
-    this.el.className = 'big_box';
-    this.el.style.height = '300px'; // XXX
+    this.el = document.createElement('div');
+    this.el.className = 'big_box centered_container';
 
     var header = document.createElement('h1');
     header.innerHTML = 'Setup';
@@ -40,6 +39,15 @@ SetupView.prototype.setupPlayerFields = function () {
     this.emailField.className = 'bottom';
     this.emailField.type = 'text';
     this.emailField.placeholder = 'Enter e-mail';
+
+    var self = this;
+    this.nicknameField.onkeyup = function () {
+        self.showNeedsNickname();
+    };
+
+    this.emailField.onkeyup = function () {
+        self.showNeedsEmail();
+    };
 };
 
 SetupView.prototype.setupSelect = function () {
@@ -60,8 +68,41 @@ SetupView.prototype.setupSubmitButton = function () {
 
     var self = this;
     this.submitButton.onclick = function () {
-        self.emit('next', self.getSetup());
+        self.submit();
     };
+};
+
+SetupView.prototype.submit = function () {
+    this.showNeedsInput();
+
+    if (this.inputValid()) {
+        this.emit('next', this.getSetup());
+    }
+};
+
+SetupView.prototype.nicknameValid = function () {
+    return this.nicknameField.value.length > 0;
+};
+
+SetupView.prototype.emailValid = function () {
+    return this.emailField.value.length > 0;
+};
+
+SetupView.prototype.inputValid = function () {
+    return this.nicknameValid() && this.emailValid();
+};
+
+SetupView.prototype.showNeedsNickname = function () {
+    this.nicknameField.className = 'top' + (this.nicknameValid() ? '' : ' incorrect');
+};
+
+SetupView.prototype.showNeedsEmail = function () {
+    this.emailField.className = 'bottom' + (this.emailValid() ? '' : ' incorrect');
+};
+
+SetupView.prototype.showNeedsInput = function () {
+    this.showNeedsNickname();
+    this.showNeedsEmail();
 };
 
 SetupView.prototype.getSetup = function () {
@@ -101,4 +142,8 @@ SetupView.prototype.getSetup = function () {
     };
 
     return setup;
+};
+
+SetupView.prototype.focus = function () {
+    this.nicknameField.focus();
 };
