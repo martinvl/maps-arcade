@@ -32,12 +32,12 @@ ScoreboardView.prototype.setup = function () {
 
     var impTimeBox = document.createElement('div');
     impTimeBox.className = 'legend_box imp_time';
-    impTimeBox.innerHTML = 'Implementation time';
+    impTimeBox.innerHTML = 'Code time';
     legend.appendChild(impTimeBox);
 
     var runTimeBox = document.createElement('div');
     runTimeBox.className = 'legend_box run_time';
-    runTimeBox.innerHTML = 'Running time';
+    runTimeBox.innerHTML = 'Run time';
     legend.appendChild(runTimeBox);
 
     var codeSizeBox = document.createElement('div');

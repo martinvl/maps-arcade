@@ -62,11 +62,6 @@ html, body
     border-bottom-right-radius: 10px;
 }
 
-.legend_box
-{
-    font-size: 15px;
-}
-
 .legend_box:first-child
 {
     margin-left: 0px;
