@@ -483,7 +483,7 @@ input[type=text]:focus {
 {
     margin: 0px auto;
     width: 60%;
-    padding: 10px;
+    padding: 0px 10px;
     box-sizing: border-box;
     background-color: #4b4b4b;
 }
@@ -498,7 +498,7 @@ input[type=text]:focus {
     margin-top: 0px;
 }
 
-.score_box
+.score_box, .legend_box
 {
     display: inline-block;
     background-color: #666;
@@ -514,7 +514,7 @@ input[type=text]:focus {
     font-size: 20px;
 }
 
-.score:nth-child(odd) > .score_box
+.score:nth-child(even) > .score_box
 {
     background-color: #bbb;
     color: #222;
@@ -533,37 +533,53 @@ input[type=text]:focus {
     border-bottom-right-radius: 10px;
 }
 
-.score_box.rank
+.legend_box
+{
+    font-size: 15px;
+}
+
+.legend_box:first-child
+{
+    margin-left: 0px;
+    border-bottom-left-radius: 10px;
+}
+
+.legend_box:last-child
+{
+    border-bottom-right-radius: 10px;
+}
+
+.rank
 {
     width: 40px;
     text-align: center;
     font-size: 24px;
 }
 
-.score_box.name
+.name
 {
-    width: -webkit-calc(30% + 39px);
+    width: -webkit-calc(20% - 1px);
 }
 
-.score_box.language
+.language
 {
-    width: -webkit-calc(15% - 1px);
+    width: -webkit-calc(20% - 10px);
 }
 
-.score_box.imp_time
+.imp_time
 {
-    width: -webkit-calc(15% - 1px);
+    width: -webkit-calc(20% - 10px);
     text-align: center;
 }
 
-.score_box.run_time
+.run_time
 {
-    width: -webkit-calc(15% - 1px);
+    width: -webkit-calc(20% - 10px);
     text-align: center;
 }
 
-.score_box.code_size
+.code_size
 {
-    width: -webkit-calc(15% - 1px);
+    width: -webkit-calc(20% - 10px);
     text-align: center;
 }
