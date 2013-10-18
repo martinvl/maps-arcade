@@ -4,6 +4,7 @@
     "dependencies":{
         "code-mirror":">=3.0",
         "express":">=3.0",
+        "inherits":">=2.0",
         "nedb":">=0.8",
         "objdist":">=0.1",
         "objsync":">=0.1",
