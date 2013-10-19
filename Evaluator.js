@@ -227,7 +227,7 @@ Evaluator.prototype.testC = function (statusCallback, callback) {
 };
 
 Evaluator.prototype.test = function (command, statusCallback, callback) {
-    var numTests = 8;
+    var numTests = 11;
     var numPassed = 0;
     var totalRunningTime = 0;
     var failed = false;
