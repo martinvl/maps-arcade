@@ -17,6 +17,7 @@ ProblemView.prototype.setup = function () {
 
     this.setupHeader();
     this.setupProblem();
+    this.setupExampleHeader();
     this.setupExamples();
     this.setupNextButton();
 };
@@ -32,6 +33,12 @@ ProblemView.prototype.setupProblem = function () {
     this.problemView.className = 'info';
     this.problemView.innerHTML = this.problem;
     this.el.appendChild(this.problemView);
+};
+
+ProblemView.prototype.setupExampleHeader = function () {
+    this.header = document.createElement('h3');
+    this.header.innerHTML = 'Examples';
+    this.el.appendChild(this.header);
 };
 
 ProblemView.prototype.setupExamples = function () {
