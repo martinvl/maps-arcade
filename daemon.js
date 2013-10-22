@@ -31,6 +31,7 @@ publishResults();
 
 // --- Setup evaluation ---
 var problem1Evaluator = new Evaluator('problem1');
+var problem2Evaluator = new Evaluator('problem2');
 
 transport.sockets.on('connection', function (socket) {
     var userData;
@@ -100,19 +101,22 @@ transport.sockets.on('connection', function (socket) {
         var evaluator;
 
         switch (data.problemID) {
-            case "problem1":
+            case 'problem1':
                 evaluator = problem1Evaluator;
+                break;
+            case 'problem2':
+                evaluator = problem2Evaluator;
                 break;
         }
 
         switch (data.language) {
-            case "c":
+            case 'c':
                 evaluator.evaluateC(data.codeBody, handleStatus, handleResult);
                 break;
-            case "java":
+            case 'java':
                 evaluator.evaluateJava(data.codeBody, handleStatus, handleResult);
                 break;
-            case "python":
+            case 'python':
                 evaluator.evaluatePython(data.codeBody, handleStatus, handleResult);
                 break;
         }

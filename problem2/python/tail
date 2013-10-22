@@ -1,0 +1,17 @@
+
+lines = stdin.readlines()
+N = int(lines[0])
+numbers = lines[1].split(' ')
+
+for i in range(0, len(numbers)):
+    numbers[i] = int(numbers[i])
+
+k = int(lines[2]);
+
+start = time();
+result = get_index(numbers, k)
+end = time();
+
+running_time = end - start
+stdout.write('%ld\n' % result);
+stderr.write('%f\n' % running_time);
