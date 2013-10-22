@@ -18,4 +18,3 @@ public class Solver {
         System.err.println(runningTime);
     }
 
-    static

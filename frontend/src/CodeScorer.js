@@ -13,7 +13,7 @@ var TimerView = require('./TimerView');
 var TIMEOUT = 60;
 var PYTHON_DEFAULT = 'def sum_even(n):';
 var C_DEFAULT = 'long sumEven(long n)\n{\n}';
-var JAVA_DEFAULT = 'public long sumEven(long n) {\n}';
+var JAVA_DEFAULT = 'public static long sumEven(long n) {\n}';
 
 function CodeScorer() {
     this.setup();
