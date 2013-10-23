@@ -10,12 +10,9 @@ require('code-mirror/keymap/emacs.js');
 
 var TimerView = require('./TimerView');
 
-var TIMEOUT = 60;
-var PYTHON_DEFAULT = 'def sum_even(n):';
-var C_DEFAULT = 'long sumEven(long n)\n{\n}';
-var JAVA_DEFAULT = 'public static long sumEven(long n) {\n}';
+function CodeScorer(problem) {
+    this.problem = problem;
 
-function CodeScorer() {
     this.setup();
     this.reset();
 }
@@ -41,7 +38,7 @@ CodeScorer.prototype.setup = function () {
 };
 
 CodeScorer.prototype.setupTimerView = function () {
-    this.timerView = new TimerView(TIMEOUT);
+    this.timerView = new TimerView(this.problem.timeout);
     this.el.appendChild(this.timerView.el);
 
     var self = this;
@@ -130,7 +127,7 @@ CodeScorer.prototype.setupInfoView = function () {
     var infoBox = document.createElement('div');
     infoBox.className = 'info';
     infoBox.id = 'info_box';
-    infoBox.innerHTML = '<i>sumEven</i> should return the sum of all positive <i>even</i> integers less than <i>n</i>.'; // XXX
+    infoBox.innerHTML = this.problem.definition;
     this.infoView.appendChild(infoBox);
 };
 
@@ -210,18 +207,18 @@ CodeScorer.prototype.setLanguage = function (language) {
         case 'python':
             mode = 'python';
             languageName = 'Python';
-            defaultCode = PYTHON_DEFAULT;
+            defaultCode = this.problem.pythonDefault;
             break;
         case 'c':
             mode = 'text/x-csrc';
             languageName = 'C';
-            defaultCode = C_DEFAULT;
+            defaultCode = this.problem.cDefault;
             break;
         case 'java':
         default:
             mode = 'text/x-java';
             languageName = 'Java';
-            defaultCode = JAVA_DEFAULT;
+            defaultCode = this.problem.javaDefault;
             break;
     }
 
@@ -359,7 +356,7 @@ CodeScorer.prototype.sendHandshake = function () {
 
 CodeScorer.prototype.sendCodeBody = function () {
     this.socket.emit('evaluate', {
-        problemID:'problem1',
+        problemID:this.problem.ID,
         language:this.language,
         impTime:this.timerView.getTime(),
         codeBody:this.editor.getValue()

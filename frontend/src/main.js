@@ -4,6 +4,34 @@ var ProblemView = require('./ProblemView');
 var SetupView = require('./SetupView');
 var StatusView = require('./StatusView');
 
+var PROBLEM1 = {
+    ID:'problem1',
+    timeout:60,
+    pythonDefault:'def sum_even(n):',
+    javaDefault:'public static long sumEven(long n) {\n}',
+    cDefault:'long sum_even(long n)\n{\n}',
+    description:'Implement the function <i>sumEven</i> which for a given integer <i>n</i> returns the sum of all positive <i>even</i> integers less than <i>n</i>.',
+    definition:'<i>sumEven</i> should return the sum of all positive <i>even</i> integers less than <i>n</i>.',
+    examples:[
+        'If <i>n</i> = 7, then <i>sumEven</i> should return 12, since 2 + 4 + 6 = 12',
+        'If <i>n</i> = 11, then <i>sumEven</i> should return 30, since 2 + 4 + 6 + 8 + 10 = 30'
+    ]
+};
+
+var PROBLEM2 = {
+    ID:'problem2',
+    timeout:180,
+    pythonDefault:'def get_index(numbers, k):',
+    javaDefault:'public static int getIndex(int[] numbers, int k) {\n}',
+    cDefault:'int get_index(int numbers[], size_t N, int k)\n{\n}',
+    description:'Implement the function <i>getIndex</i> which for a given array of ascending numbers, blahblah.',
+    definition:'<i>getIndex</i> hoorah.',
+    examples:[
+        'If <i>k</i> = 7, then <i>sumEven</i> should return 12, since 2 + 4 + 6 = 12',
+        'If <i>k</i> = 11, then <i>sumEven</i> should return 30, since 2 + 4 + 6 + 8 + 10 = 30'
+    ]
+};
+
 var container = document.createElement('div');
 container.className = 'container';
 document.body.appendChild(container);
@@ -12,14 +40,8 @@ document.body.appendChild(container);
 var setupView = new SetupView();
 
 // --- Setup ProblemView ---
-var problem = 'Implement the function <i>sumEven</i> which for a given integer <i>n</i> returns the sum of all positive <i>even</i> integers less than <i>n</i>.';
-var examples = [
-    'If <i>n</i> = 7, then <i>sumEven</i> should return 12, since 2 + 4 + 6 = 12',
-    'If <i>n</i> = 11, then <i>sumEven</i> should return 30, since 2 + 4 + 6 + 8 + 10 = 30'
-];
-var problemView = new ProblemView(problem, examples);
-
-var submissionView = new CodeScorer();
+var problemView = new ProblemView(PROBLEM2.description, PROBLEM2.examples);
+var submissionView = new CodeScorer(PROBLEM2);
 
 // --- Setup StatusView ---
 var statusView = new StatusView();

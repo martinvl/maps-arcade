@@ -6,6 +6,19 @@ var Datastore = require('nedb');
 var ObjDist = require('objdist');
 var Evaluator = require('./Evaluator');
 
+var PROBLEMS = {
+    'problem1':{
+        timeout:10*1000,
+        root:'problem1',
+        numTests:11
+    },
+    'problem2':{
+        timeout:5*1000,
+        root:'problem2',
+        numTests:19
+    }
+};
+
 // --- Configuration ---
 var PORT = 80;
 
@@ -30,8 +43,11 @@ var dist = new ObjDist(transport, {prefix:'results'});
 publishResults();
 
 // --- Setup evaluation ---
-var problem1Evaluator = new Evaluator('problem1');
-var problem2Evaluator = new Evaluator('problem2');
+var evaluators = {};
+
+for (var problemID in PROBLEMS) {
+    evaluators[problemID] = new Evaluator(PROBLEMS[problemID]);
+}
 
 transport.sockets.on('connection', function (socket) {
     var userData;
@@ -98,16 +114,7 @@ transport.sockets.on('connection', function (socket) {
             }
         };
 
-        var evaluator;
-
-        switch (data.problemID) {
-            case 'problem1':
-                evaluator = problem1Evaluator;
-                break;
-            case 'problem2':
-                evaluator = problem2Evaluator;
-                break;
-        }
+        var evaluator = evaluators[data.problemID];
 
         switch (data.language) {
             case 'c':
@@ -171,7 +178,7 @@ function getRankedResults(results) {
 }
 
 function publishResults() {
-    resultStore.find({problemID:'problem1'}, function (err, results) {
+    resultStore.find({}, function (err, results) {
         if (err) {
             console.dir(err);
             return;

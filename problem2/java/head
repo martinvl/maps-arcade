@@ -13,7 +13,7 @@ public class Solver {
             numbers[i] = input.nextInt();
         }
 
-        int n = input.nextInt();
+        int k = input.nextInt();
 
         long start = System.nanoTime();
         int result = getIndex(numbers, k);

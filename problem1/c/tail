@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
     scanf("%ld", &n);
 
     clock_gettime(CLOCK_REALTIME, &start);
-    long sum = sumEven(n);
+    long sum = sum_even(n);
     clock_gettime(CLOCK_REALTIME, &end);
 
     printf("%ld\n", sum);

@@ -1,10 +1,8 @@
 var exec = require('child_process').exec;
 var path = require('path');
 
-var TIMEOUT = 5 * 1000;
-
-function Evaluator(root) {
-    this.root = root;
+function Evaluator(problem) {
+    this.problem = problem;
     this.setup();
 }
 
@@ -21,7 +19,7 @@ Evaluator.prototype.teardown = function () {
 };
 
 Evaluator.prototype.clean = function () {
-    exec('rm -f ' + this.getPath('stage/*'));
+    //exec('rm -f ' + this.getPath('stage/*'));
     exec('rm -f ' + this.getPath('bin/*'));
 };
 
@@ -227,7 +225,7 @@ Evaluator.prototype.testC = function (statusCallback, callback) {
 };
 
 Evaluator.prototype.test = function (command, statusCallback, callback) {
-    var numTests = 11;
+    var numTests = this.problem.numTests;
     var numPassed = 0;
     var totalRunningTime = 0;
     var failed = false;
@@ -264,7 +262,7 @@ Evaluator.prototype.executeTest = function (testID, command, callback) {
     var inputPath = this.getPath('testdata/test' + testID + '.in');
     var answerPath = this.getPath('testdata/test' + testID + '.ans');
 
-    exec(command + ' < ' + inputPath, {timeout:TIMEOUT}, function (error, stdout, stderr) {
+    exec(command + ' < ' + inputPath, {timeout:this.problem.timeout}, function (error, stdout, stderr) {
         if (error) {
             if (error.signal == 'SIGTERM') {
                 callback(false, 'Timelimit exceeded');
@@ -275,12 +273,14 @@ Evaluator.prototype.executeTest = function (testID, command, callback) {
             var result = stdout.toString();
             var runningTime = Number(stderr.toString());
 
-            exec('(echo ' + stdout.toString() + ') | diff ' + answerPath + ' -', function (error, stdout, stderr) {
+            exec('(echo ' + result + ') | diff ' + answerPath + ' -', function (error, stdout, stderr) {
                 if (error) {
                     if (error.signal == 'SIGTERM') {
                         callback(false, 'Timelimit exceeded');
                     } else {
                         callback(false, 'Wrong answer');
+                        console.log('failed testID ' + testID);
+                        console.dir(result);
                     }
                     return;
                 }
@@ -293,5 +293,5 @@ Evaluator.prototype.executeTest = function (testID, command, callback) {
 };
 
 Evaluator.prototype.getPath = function (relativePath) {
-    return path.resolve(this.root, relativePath);
+    return path.resolve(this.problem.root, relativePath);
 };
