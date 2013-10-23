@@ -19,7 +19,7 @@ Evaluator.prototype.teardown = function () {
 };
 
 Evaluator.prototype.clean = function () {
-    //exec('rm -f ' + this.getPath('stage/*'));
+    exec('rm -f ' + this.getPath('stage/*'));
     exec('rm -f ' + this.getPath('bin/*'));
 };
 
