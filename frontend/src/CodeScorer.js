@@ -169,7 +169,6 @@ CodeScorer.prototype.setupStatusView = function () {
     var submissionField = document.createElement('div');
     submissionField.className = 'info_part top selected';
     this.submissionIndicator = document.createElement('div');
-    updateIndicator(this.submissionIndicator, 'failed');
     submissionField.appendChild(this.submissionIndicator);
     submissionField.appendChild(document.createTextNode('Submission'));
     this.statusView.appendChild(submissionField);
@@ -177,7 +176,6 @@ CodeScorer.prototype.setupStatusView = function () {
     var compilationField = document.createElement('div');
     compilationField.className = 'info_part middle selected';
     this.compilationIndicator = document.createElement('div');
-    updateIndicator(this.compilationIndicator, 'failed');
     compilationField.appendChild(this.compilationIndicator);
     compilationField.appendChild(document.createTextNode('Compilation'));
     this.statusView.appendChild(compilationField);
@@ -185,7 +183,6 @@ CodeScorer.prototype.setupStatusView = function () {
     var testingField = document.createElement('div');
     testingField.className = 'info_part bottom selected';
     this.testingIndicator = document.createElement('div');
-    updateIndicator(this.testingIndicator, 'failed');
     testingField.appendChild(this.testingIndicator);
     testingField.appendChild(document.createTextNode('Testing'));
     this.statusView.appendChild(testingField);
@@ -258,6 +255,7 @@ CodeScorer.prototype.reset = function () {
     this.setPlayer();
     this.setLanguage();
     this.setEditorStyle();
+    this.resetStatus();
 
     this.hasStartedCoding = false;
 };
@@ -268,6 +266,12 @@ CodeScorer.prototype.focus = function () {
 
 CodeScorer.prototype.refresh = function () {
     this.editor.refresh();
+};
+
+CodeScorer.prototype.resetStatus = function () {
+    updateIndicator(this.submissionIndicator, 'failed');
+    updateIndicator(this.compilationIndicator, 'failed');
+    updateIndicator(this.testingIndicator, 'failed');
 };
 
 // ----- State handling -----
