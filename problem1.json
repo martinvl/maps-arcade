@@ -1,0 +1,27 @@
+{
+   "id":"problem1",
+   "precode":{
+       "python":{
+           "headPath":"problem1/python/head",
+           "tailPath":"problem1/python/tail",
+           "srcPath":"solver.py",
+           "binPath":"solver.py"
+       },
+       "java":{
+           "headPath":"problem1/java/head",
+           "tailPath":"problem1/java/tail",
+           "srcPath":"Solver.java",
+           "binPath":"Solver"
+       },
+       "c":{
+           "headPath":"problem1/c/head",
+           "tailPath":"problem1/c/tail",
+           "srcPath":"solver.c",
+           "binPath":"solver"
+       }
+   },
+   "testdataPath":"problem1/testdata",
+   "timeout":20000,
+   "tests":
+       [{"id":"test1","inputPath":"test1.in","solutionPath":"test1.ans"},{"id":"test2","inputPath":"test2.in","solutionPath":"test2.ans"},{"id":"test3","inputPath":"test3.in","solutionPath":"test3.ans"},{"id":"test4","inputPath":"test4.in","solutionPath":"test4.ans"},{"id":"test5","inputPath":"test5.in","solutionPath":"test5.ans"},{"id":"test6","inputPath":"test6.in","solutionPath":"test6.ans"},{"id":"test7","inputPath":"test7.in","solutionPath":"test7.ans"},{"id":"test8","inputPath":"test8.in","solutionPath":"test8.ans"},{"id":"test9","inputPath":"test9.in","solutionPath":"test9.ans"},{"id":"test10","inputPath":"test10.in","solutionPath":"test10.ans"},{"id":"test11","inputPath":"test11.in","solutionPath":"test11.ans"}]
+}
