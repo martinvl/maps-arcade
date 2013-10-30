@@ -83,7 +83,7 @@ html, body
 
 .name
 {
-    width: -webkit-calc(20% - 1px);
+    width: -webkit-calc(20% - 5px);
 }
 
 .language
