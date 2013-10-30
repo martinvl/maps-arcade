@@ -319,16 +319,17 @@ SandboxEvaluator.prototype.getRunCommand = function () {
 
     switch (this.language) {
         case 'python':
-            command += ' python';
+            command += ' python ';
             break;
         case 'java':
-            command += ' java';
+            command += ' java ';
             break;
         case 'c':
+            command += ' ./';
             break;
     }
 
-    command += ' ./' + this.problem.precode[this.language].binPath;
+    command += this.problem.precode[this.language].binPath;
 
     return command;
 };
