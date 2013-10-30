@@ -24,11 +24,11 @@ var PROBLEM2 = {
     pythonDefault:'def get_index(numbers, k):',
     javaDefault:'public static int getIndex(int[] numbers, int k) {\n}',
     cDefault:'int get_index(int numbers[], size_t N, int k)\n{\n}',
-    description:'Implement the function <i>getIndex</i> which for a given array of ascending numbers, blahblah.',
-    definition:'<i>getIndex</i> hoorah.',
+    description:'Implement the function <i>getIndex</i> which for a given array of ascending numbers, and an integer <i>k</i>, returns the index of <i>k</i> in <i>numbers</i>.',
+    definition:'<i>getIndex</i> should return the index of <i>k</i> in <i>numbers</i>.',
     examples:[
-        'If <i>k</i> = 7, then <i>sumEven</i> should return 12, since 2 + 4 + 6 = 12',
-        'If <i>k</i> = 11, then <i>sumEven</i> should return 30, since 2 + 4 + 6 + 8 + 10 = 30'
+        'If <i>numbers</i> = [0, 1, 2, 3], and <i>k</i> = 2, then <i>getIndex</i> should return 2.',
+        'If <i>numbers</i> = [2, 4, 6, 8], and <i>k</i> = 4, then <i>getIndex</i> should return 1.'
     ]
 };
 

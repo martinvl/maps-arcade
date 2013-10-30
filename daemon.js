@@ -1,26 +1,20 @@
-var express = require('express');
-var http = require('http');
-var path = require('path');
-var io = require('socket.io');
 var Datastore = require('nedb');
+var express = require('express');
+var SandboxEvaluator = require('./SandboxEvaluator');
+var fs = require('fs');
+var http = require('http');
+var io = require('socket.io');
 var ObjDist = require('objdist');
-var Evaluator = require('./Evaluator');
+var path = require('path');
 
-var PROBLEMS = {
-    'problem1':{
-        timeout:10*1000,
-        root:'problem1',
-        numTests:11
-    },
-    'problem2':{
-        timeout:5*1000,
-        root:'problem2',
-        numTests:19
-    }
-};
+if (process.argv.length < 3) {
+    console.error('USAGE: daemon.js <config_path>');
+    process.exit(1);
+}
 
-// --- Configuration ---
-var PORT = 80;
+var configPath = process.argv[2];
+var config = JSON.parse(fs.readFileSync(configPath));
+var problem = JSON.parse(fs.readFileSync(config.problem_config));
 
 // --- Setup express ---
 var app = express();
@@ -29,7 +23,7 @@ var frontendPath = path.join(__dirname, 'frontend');
 app.use(express.static(frontendPath));
 
 var server = http.createServer(app);
-server.listen(PORT);
+server.listen(config.port);
 
 // --- Setup persistent stores ---
 var resultStore = new Datastore({filename:'results', autoload:true});
@@ -42,15 +36,9 @@ var transport = io.listen(server);
 var dist = new ObjDist(transport, {prefix:'results'});
 publishResults();
 
-// --- Setup evaluation ---
-var evaluators = {};
-
-for (var problemID in PROBLEMS) {
-    evaluators[problemID] = new Evaluator(PROBLEMS[problemID]);
-}
-
 transport.sockets.on('connection', function (socket) {
     var userData;
+    var evaluator;
 
     socket.on('email', function (email) {
         addEmail(email);
@@ -58,36 +46,32 @@ transport.sockets.on('connection', function (socket) {
 
     socket.on('handshake', function (data) {
         userData = data;
+        evaluator = setupEvaluator(userData.name, socket);
     });
 
     socket.on('evaluate', function (data) {
-        if (!userData) {
+        if (!userData || !evaluator) {
             socket.emit('status', {mode:'submission', success:false, message:'Needs handshake'});
             return;
         }
 
         socket.emit('status', {mode:'submission', success:true});
 
-        var handleStatus = function (status) {
-            socket.emit('status', status);
-        };
+        evaluator.setLanguage(data.language);
+        evaluator.setCodebody(data.codeBody);
 
-        var handleResult = function (accepted, message, runningTime) {
-            var result = {
-                problemID:data.problemID,
-                accepted:accepted,
-                message:message
-            };
+        evaluator.once('result', function (result) {
+            result.problemID = data.problemID;
 
-            if (accepted) {
-                result.runTime = formatTime(runningTime);
+            if (result.accepted) {
+                result.runTime = formatTime(result.runningTime);
                 result.impTime = formatTime(data.impTime);
                 result.codeSize = codeSize(data.codeBody);
 
                 var storedResult = {
-                    problemID:data.problemID,
-                    runTime:runningTime,
-                    impTime:data.impTime,
+                    problemID:result.problemID,
+                    runTime:result.runningTime,
+                    impTime:result.impTime,
                     codeSize:result.codeSize,
                     language:data.language,
                     name:userData.name
@@ -112,23 +96,28 @@ transport.sockets.on('connection', function (socket) {
             } else {
                 socket.emit('result', result)
             }
-        };
+        });
 
-        var evaluator = evaluators[data.problemID];
-
-        switch (data.language) {
-            case 'c':
-                evaluator.evaluateC(data.codeBody, handleStatus, handleResult);
-                break;
-            case 'java':
-                evaluator.evaluateJava(data.codeBody, handleStatus, handleResult);
-                break;
-            case 'python':
-                evaluator.evaluatePython(data.codeBody, handleStatus, handleResult);
-                break;
-        }
+        evaluator.evaluate(function (error) {});
     });
 });
+
+function setupEvaluator(name, socket) {
+    var evaluator = new SandboxEvaluator(path.resolve(name), config.uid);
+    evaluator.setProblem(problem);
+
+    evaluator.on('status', function (status) {
+        if (status.mode != 'assembly') {
+            socket.emit('status', status);
+        }
+    });
+
+    evaluator.on('error', function (error) {
+        console.error(error);
+    });
+
+    return evaluator;
+}
 
 function addResult(result) {
     var query = {
