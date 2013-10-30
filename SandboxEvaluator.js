@@ -180,7 +180,7 @@ SandboxEvaluator.prototype.compileC = function (callback) {
     var binPath = this.getBinPath();
 
     var self = this;
-    exec('gcc -std=gnu99 -O2 ' + srcPath + ' -o ' + binPath + ' -lrt', function (error, stdout, stderr) {
+    child_process.exec('gcc -std=gnu99 -O2 ' + srcPath + ' -o ' + binPath + ' -lrt', function (error, stdout, stderr) {
         var compilationOutput = stdout.toString() + '\n' + stderr.toString();
         self.log(compilationOutput);
         self.emit('compilation-output', compilationOutput);
@@ -328,7 +328,7 @@ SandboxEvaluator.prototype.getRunCommand = function () {
             break;
     }
 
-    command += ' ' + this.problem.precode[this.language].binPath;
+    command += ' ./' + this.problem.precode[this.language].binPath;
 
     return command;
 };
