@@ -71,7 +71,7 @@ transport.sockets.on('connection', function (socket) {
                 var storedResult = {
                     problemID:result.problemID,
                     runTime:result.runningTime,
-                    impTime:result.impTime,
+                    impTime:data.impTime,
                     codeSize:result.codeSize,
                     language:data.language,
                     name:userData.name

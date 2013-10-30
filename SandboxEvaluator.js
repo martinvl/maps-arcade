@@ -312,7 +312,7 @@ SandboxEvaluator.prototype.getProblemPath = function () {
 };
 
 SandboxEvaluator.prototype.getRunCommand = function () {
-    var command = './sandbox_test.js';
+    var command = path.resolve('sandbox_test.js');
 
     command += ' ' + this.getProblemPath();
     command += ' ' + this.uid;

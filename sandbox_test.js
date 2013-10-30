@@ -1,6 +1,5 @@
 #!/usr/local/bin/node
 
-var chroot = require('chroot');
 var child_process = require('child_process');
 
 if (process.argv.length < 5) {
