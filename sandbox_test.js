@@ -12,10 +12,8 @@ var uid = Number(process.argv[3]);
 var command = process.argv[4];
 var args = process.argv.slice(5);
 
-var child_proc = child_process.spawn(command, args, {cwd:root, uid:uid, stdio:'inherit'}, function (error, stdout, stdin) {
-    if (error) {
-        process.exit(1);
-    }
+var child_proc = child_process.spawn(command, args, {cwd:root, uid:uid, stdio:'inherit'});
 
-    process.exit(0);
+child_proc.on('exit', function (code, signal) {
+    process.exit(code);
 });
