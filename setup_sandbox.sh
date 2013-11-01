@@ -1,4 +1,4 @@
 #!/bin/bash
 problem_path=$1
 
-mkdir -p $problem_path/jail
+mkdir -p $problem_path
