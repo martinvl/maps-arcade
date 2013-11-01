@@ -11,5 +11,12 @@
         "socket.io":">=0.9",
         "socket.io-client":">=0.9",
         "underscore":">=1.5"
+    },
+    "bin":{
+        "maps-arcade":"./server.js"
+    },
+    "config":"config.json",
+    "scripts":{
+        "prepublish":"make frontend"
     }
 }

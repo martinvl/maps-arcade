@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var Datastore = require('nedb');
 var express = require('express');
 var SandboxEvaluator = require('./SandboxEvaluator');
@@ -7,14 +9,20 @@ var io = require('socket.io');
 var ObjDist = require('objdist');
 var path = require('path');
 
-if (process.argv.length < 3) {
-    console.error('USAGE: daemon.js <config_path>');
+var configPath = process.argv[2] || process.env.npm_package_config || 'config.json';
+
+try {
+    var config = JSON.parse(fs.readFileSync(configPath));
+} catch (error) {
+    console.error('ERROR: Could not read config at ' + configPath);
     process.exit(1);
 }
 
-var configPath = process.argv[2];
-var config = JSON.parse(fs.readFileSync(configPath));
-var problem = JSON.parse(fs.readFileSync(config.problem_config));
+try {
+    var problem = JSON.parse(fs.readFileSync(config.problem_config));
+} catch (error) {
+    console.error('ERROR: Could not read problem at ' + config.problem_config);
+}
 
 // --- Setup express ---
 var app = express();
