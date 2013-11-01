@@ -1,5 +1,3 @@
-#!/usr/bin/node
-
 var child_process = require('child_process');
 
 if (process.argv.length < 5) {
