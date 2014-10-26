@@ -1,12 +1,12 @@
 var io = require('socket.io-client');
 var EventEmitter = require('events').EventEmitter;
 var inherits = require('inherits');
-var CodeMirror = require('code-mirror');
-require('code-mirror/mode/python.js');
-require('code-mirror/mode/clike.js');
-require('code-mirror/addon/edit/closebrackets.js');
-require('code-mirror/keymap/vim.js');
-require('code-mirror/keymap/emacs.js');
+var CodeMirror = require('codemirror');
+require('codemirror/mode/python/python.js');
+require('codemirror/mode/clike/clike.js');
+require('codemirror/addon/edit/closebrackets.js');
+require('codemirror/keymap/vim.js');
+require('codemirror/keymap/emacs.js');
 
 var TimerView = require('./TimerView');
 

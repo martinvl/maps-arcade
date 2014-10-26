@@ -1,22 +1,22 @@
 {
-    "name":"maps-arcade",
-    "version":"0.1.0b-1",
-    "dependencies":{
-        "code-mirror":">=3.0",
-        "express":">=3.0",
-        "inherits":">=2.0",
-        "nedb":">=0.8",
-        "objdist":">=0.1",
-        "objsync":">=0.1",
-        "socket.io":">=0.9",
-        "socket.io-client":">=0.9",
-        "underscore":">=1.5"
-    },
-    "bin":{
-        "maps-arcade":"./server.js"
-    },
-    "config":"config.json",
-    "scripts":{
-        "prepublish":"make frontend"
-    }
+  "name": "maps-arcade",
+  "version": "0.1.0b-1",
+  "dependencies": {
+    "codemirror": "^4.7.0",
+    "express": ">=3.0",
+    "inherits": ">=2.0",
+    "nedb": ">=0.8",
+    "objdist": ">=0.1",
+    "objsync": ">=0.1",
+    "socket.io": ">=0.9",
+    "socket.io-client": ">=0.9",
+    "underscore": ">=1.5"
+  },
+  "bin": {
+    "maps-arcade": "./server.js"
+  },
+  "config": "config.json",
+  "scripts": {
+    "prepublish": "make frontend"
+  }
 }
