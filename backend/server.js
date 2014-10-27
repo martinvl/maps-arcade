@@ -72,7 +72,8 @@ var emailStore = new Datastore({filename:'../data/emails', autoload:true});
 var transport = io.listen(server);
 
 // --- Setup evaluation server ---
-var evaluationServer = new EvaluationServer(taskFromConfig(problem), {port: config.evaluation_port});
+var evalstatus = new ObjDist(transport, {prefix:'evalstatus'});
+var evaluationServer = new EvaluationServer(taskFromConfig(problem), {port: config.evaluation_port}, evalstatus);
 
 // --- Setup result distribution ---
 var dist = new ObjDist(transport, {prefix:'results'});
@@ -105,7 +106,8 @@ transport.sockets.on('connection', function (socket) {
         name:userData.name
         };
 
-        evaluationServer.evaluate(data.language, data.codeBody)
+        var eval = evaluationServer.evaluate(data.language, data.codeBody);
+        if(eval) eval
         .then(function (runningTime) {
             result.accepted = true;
             result.runTime = runningTime;
@@ -139,6 +141,9 @@ transport.sockets.on('connection', function (socket) {
                 socket.emit('status', {mode:'testing', pending: true});
             }
         });
+        else {
+            socket.emit('status', {mode:'compilation', success: false});
+        }
     });
 });
 
