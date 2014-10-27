@@ -62,6 +62,9 @@ class VM:
 		# None for no expiry
 		self.expiry = None
 
+		# To measure startup delay
+		self.beginstart = time.time()
+
 		# Launch
 		cmd = [
 			"qemu-system-x86_64",
@@ -99,6 +102,7 @@ class VM:
 			return
 		self.ctrl_in = Serial(self.ctrl_in_pts, interCharTimeout=1)
 		self.ctrl_out = Serial(self.ctrl_out_pts, writeTimeout=20)
+		self.beginstart = time.time()
 
 	def __destroy__(self):
 		self.kill()
@@ -185,7 +189,8 @@ class VM:
 
 		if data["cmd"] == "ready" and not self.ready:
 			self.ready = True
-			print "VM id "+str(self.id)+" is ready"
+			delay = time.time() - self.beginstart
+			print "VM id "+str(self.id)+" is ready (took "+str(delay)+" seconds)"
 			return
 		elif data["cmd"] == "ready":
 			print "VM id "+str(self.id)+" has crashed and rebooted vmcontroller"
