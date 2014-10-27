@@ -244,6 +244,7 @@ CodeScorer.prototype.setEditorStyle = function (editorStyle) {
     }
 
     this.editor.setOption('keyMap', keyMap);
+    this.editor.setOption('vimMode', editorStyle === 'vim');
 
     this.editorStyleField.innerHTML = editorName;
 };
