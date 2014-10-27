@@ -80,6 +80,7 @@ EvaluationServer.prototype.handleConnection = function (socket) {
     socket.on('close', function () {
         client.deferred.reject('connection closed');
         delete self.clients[clientId];
+        delete self.idleClients[clientId];
     });
 };
 
