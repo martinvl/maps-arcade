@@ -10,6 +10,9 @@ import websocket
 import sys
 from Queue import Queue
 
+# local imports
+import config
+
 def vmselect(vms, sock):
 	rlist = [x.ctrl_in for x in vms]
 	if sock != None:
@@ -100,6 +103,11 @@ class VM:
 	def __destroy__(self):
 		self.kill()
 
+	def endsub(self, errstr=""):
+		if self.hassub:
+			ws.endsub(self.submissionId, errstr)
+			self.hassub = False
+
 	def getpts(self):
 		#r = re.compile('.*(/dev/pts/\d+) \(label (charserial\d+)\).*')
 		r = re.compile('.*(/dev/pts/\d+).*')
@@ -122,8 +130,11 @@ class VM:
 
 	def kill(self):
 		print "Killing VM id "+str(self.id)+" (pid "+str(self.p.pid)+")"
-		self.p.terminate() # Signal
-		self.p.wait() # Wait for return
+		if self.p:
+			self.p.terminate() # Signal
+			self.p.wait() # Wait for return
+			self.p = None
+		self.endsub("VM died / killed for unknown reason")
 		self.ready = False
 
 	def alive(self):
@@ -171,7 +182,7 @@ class VM:
 		# Errors!
 		if data["cmd"] == 'err':
 			errstr = data["str"]
-			ws.endsub(self.submissionId, errstr)
+			self.endsub(errstr)
 			self.kill()
 			return
 
@@ -181,7 +192,7 @@ class VM:
 			return
 		elif data["cmd"] == "ready":
 			print "VM id "+str(self.id)+" has crashed and rebooted vmcontroller"
-			ws.endsub(self.submissionId, "VM crashed and rebooted controller script")
+			self.endsub("VM crashed and rebooted controller script")
 			self.kill()
 			return
 
@@ -197,7 +208,7 @@ class VM:
 			ws.compile(self.submissionId, data["status"], data["out"], self.code)
 			if data["status"] != 0:
 				print data["out"]
-				ws.endsub(self.submissionId, "Program failed to compile")
+				self.endsub("Program failed to compile")
 				self.kill()
 				return
 			self.sub_testcase()
@@ -242,7 +253,7 @@ class VM:
 			ws.eval(self.submissionId, self.testid, status2, stderr, wtime)
 			if status2 != 0:
 				# A failed test case
-				ws.endsub(self.submissionId, "")
+				self.endsub()
 				self.kill()
 				return
 			# Next testcase
@@ -254,8 +265,7 @@ class VM:
 
 	def timed(self):
 		if self.expiry != None and time.time() > self.expiry:
-			if self.hassub:
-				ws.endsub(self.submissionId, "VM timelimit exceeded")
+			self.endsub("VM timelimit exceeded")
 			self.kill()
 
 
@@ -271,7 +281,7 @@ class VM:
 
 		if self.testcase >= len(self.testcases):
 			# Feedback has been given on the last testcase
-			ws.endsub(self.submissionId)
+			self.endsub()
 			self.kill()
 			return
 
@@ -294,7 +304,7 @@ class VM:
 
 		self.serwrite({"cmd":         "compile",
 			       "lang":        lang,
-			       "compiletime": compiletime,
+			       "compiletime": config.compiletime,
 			       "code":        assembly})
 
 class VMmgr:
@@ -337,6 +347,7 @@ class VMmgr:
 		for vm in self.vms:
 			if not vm.alive():
 				altered = True
+				vm.kill()
 			else:
 				new.append(vm)
 		self.vms = new
@@ -445,15 +456,11 @@ class upstream:
 		global problem
 		problem = data
 
-# globals
-compiletime = 10 # seconds
-
-# 1 second timeout
-#ws = upstream("hercules", "ws://178.62.246.106:8081/", 2)
-ws = upstream("eval1", "ws://10.133.234.169:8081/", 2)
+# Connect to websockets (try, at least)
+ws = upstream(config.name, config.connect, config.connect_timeout)
 
 # One VM per core so we can guarantee a core per vm
-vmmgr = VMmgr(2)
+vmmgr = VMmgr(config.numvms)
 
 # Problem config
 problem = None
@@ -486,12 +493,12 @@ while True:
 
 	vmmgr.readlist(readvms)
 	vmmgr.timeds()
+	# Remove dead ones
 	vmmgr.purgedead()
 
 	if not subq.empty() and vmmgr.freeslots() > 0:
 		vmmgr.assign(subq.get())
 
 	vmmgr.checkfreeslots()
-	# Remove dead ones
 
 # vim: set noexpandtab softtabstop=8 tabstop=8 shiftwidth=8:

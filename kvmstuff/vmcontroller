@@ -249,7 +249,7 @@ while True:
 		codefile = writedir + "/" + sourcefile[language]
 		try:
 			fp = open(codefile, "w")
-			fp.write(data["code"])
+			fp.write(bytearray(data["code"], "utf-8"))
 			fp.close()
 		except Exception as e:
 			sererr("Problem writing code file: "+str(e))
