@@ -109,38 +109,38 @@ class VM:
 			self.hassub = False
 
 	def getpts(self):
-		#r = re.compile('.*(/dev/pts/\d+) \(label (charserial\d+)\).*')
 		r = re.compile('.*(/dev/pts/\d+).*')
 		line = self.p.stderr.readline()
 		m = r.match(line)
 		if m != None:
 			g = m.groups()
 			pts = g[0]
-			#label = g[1]
 			if self.root_pts == None:
-			#if label == "charserial0":
 				print "VM id "+str(self.id)+" has root serial at "+pts
 				self.root_pts = pts
-			#elif label == "charserial1":
 			elif self.ctrl_in_pts == None:
 				self.ctrl_in_pts = pts
-			#elif label == "charserial2":
 			elif self.ctrl_out_pts == None:
 				self.ctrl_out_pts = pts
 
 	def kill(self):
 		print "Killing VM id "+str(self.id)+" (pid "+str(self.p.pid)+")"
-		if self.p and self.p.poll():
-			self.p.terminate() # Signal
+		if self.p:
+			try:
+				# Signal
+				self.p.terminate()
+			except OSError as e:
+				pass
 			self.p.wait() # Wait for return
 		self.p = None
-		self.endsub("VM died / killed for unknown reason")
+		self.endsub("VM killed for unknown reason")
 		self.ready = False
 
 	def alive(self):
 		if self.p == None:
 			return False
 		if self.p.poll() != None:
+			self.endsub("VM died for unknown reason")
 			return False
 		return True
 
@@ -159,9 +159,6 @@ class VM:
 		length = int(lengthstr)
 		data = self.ctrl_in.read(length+1)
 		return json.loads(data)
-		#except Exception as e:
-		#	print "VM id "+str(self.id)+": error reading from serial: "+str(e)
-		#	return None
 
 	def serwrite(self, data):
 		enc = json.dumps(data)
@@ -347,7 +344,6 @@ class VMmgr:
 		for vm in self.vms:
 			if not vm.alive():
 				altered = True
-				vm.kill()
 			else:
 				new.append(vm)
 		self.vms = new
@@ -437,7 +433,11 @@ class upstream:
 			self.ws = None
 			return
 		print "From server: "
-		print event, data
+		print event
+		if event != "problem":
+			print data
+		else:
+			print "[ data not shown ]"
 
 		if event == "problem":
 			self.on_problem(data)
