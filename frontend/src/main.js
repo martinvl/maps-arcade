@@ -23,7 +23,7 @@ var PROBLEM2 = {
     timeout:180,
     pythonDefault:'def get_index(numbers, k):',
     javaDefault:'public static int getIndex(int[] numbers, int k) {\n}',
-    cDefault:'int get_index(int numbers[], size_t N, int k)\n{\n}',
+    cDefault:'size_t get_index(int numbers[], size_t N, int k)\n{\n}',
     description:'Implement the function <i>getIndex</i> which for a given array of ascending numbers, and an integer <i>k</i>, returns the index of <i>k</i> in <i>numbers</i>.',
     definition:'<i>getIndex</i> should return the index of <i>k</i> in <i>numbers</i>.',
     examples:[
