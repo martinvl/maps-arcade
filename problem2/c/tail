@@ -1,11 +1,11 @@
 
-int main(int argc, char* argv[])
+int main()
 {
     size_t N;
     scanf("%zd", &N);
 
     int numbers[MAX_LEN];
-    for (int i = 0; i < N; ++i) {
+    for (size_t i = 0; i < N; ++i) {
         scanf("%d", &numbers[i]);
     }
 
