@@ -130,10 +130,10 @@ class VM:
 
 	def kill(self):
 		print "Killing VM id "+str(self.id)+" (pid "+str(self.p.pid)+")"
-		if self.p:
+		if self.p and self.p.poll():
 			self.p.terminate() # Signal
 			self.p.wait() # Wait for return
-			self.p = None
+		self.p = None
 		self.endsub("VM died / killed for unknown reason")
 		self.ready = False
 
