@@ -1,0 +1,48 @@
+
+/Users/martinvl/dev/maps-arcade/problem2/stage/solver.c:27:5: warning: implicit declaration of function 'clock_gettime' is invalid in C99 [-Wimplicit-function-declaration]
+    clock_gettime(CLOCK_REALTIME, &start);
+    ^
+/Users/martinvl/dev/maps-arcade/problem2/stage/solver.c:27:19: error: use of undeclared identifier 'CLOCK_REALTIME'
+    clock_gettime(CLOCK_REALTIME, &start);
+                  ^
+/Users/martinvl/dev/maps-arcade/problem2/stage/solver.c:29:19: error: use of undeclared identifier 'CLOCK_REALTIME'
+    clock_gettime(CLOCK_REALTIME, &end);
+                  ^
+1 warning and 2 errors generated.
+
+
+/Users/martinvl/dev/maps-arcade/problem2/stage/solver.c:29:5: warning: implicit declaration of function 'clock_gettime' is invalid in C99 [-Wimplicit-function-declaration]
+    clock_gettime(CLOCK_REALTIME, &start);
+    ^
+/Users/martinvl/dev/maps-arcade/problem2/stage/solver.c:29:19: error: use of undeclared identifier 'CLOCK_REALTIME'
+    clock_gettime(CLOCK_REALTIME, &start);
+                  ^
+/Users/martinvl/dev/maps-arcade/problem2/stage/solver.c:31:19: error: use of undeclared identifier 'CLOCK_REALTIME'
+    clock_gettime(CLOCK_REALTIME, &end);
+                  ^
+1 warning and 2 errors generated.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/Users/martinvl/dev/maps-arcade/problem2/stage/Solver.java:30: missing return statement
+}
+^
+1 error
+
+
+
+
+

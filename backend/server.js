@@ -2,7 +2,7 @@
 
 var Datastore = require('nedb');
 var express = require('express');
-var SandboxEvaluator = require('./SandboxEvaluator');
+var EvaluationServer = require('./EvaluationServer');
 var fs = require('fs');
 var http = require('http');
 var io = require('socket.io');
@@ -24,21 +24,55 @@ try {
     console.error('ERROR: Could not read problem at ' + config.problem_config);
 }
 
+function taskFromConfig(problem){
+    var rf = function(file){
+        return String(fs.readFileSync(file));
+    }
+
+    //console.log(problem);
+    var data = {
+        id: problem.id,
+        timelimit: (problem.timeout/1000.0),
+        memlimit: 0,
+        assembly: { /* fill later */ },
+        test: { /* fill later */}
+    }
+    var lang = ['c', 'java', 'python'];
+    for(var i in lang) {
+        l = lang[i]
+            data.assembly[l] = {
+                head: rf(problem.precode[l].headPath),
+                tail: rf(problem.precode[l].tailPath),
+            };
+    }
+    for(var i in problem.tests) {
+        t = problem.tests[i];
+        data.test[t.id] = {
+            input:  rf(problem.testdataPath+"/"+t.inputPath),
+            output: rf(problem.testdataPath+"/"+t.solutionPath),
+        };
+    }
+    return data;
+}
+
 // --- Setup express ---
 var app = express();
 
-var frontendPath = path.join(__dirname, 'frontend');
+var frontendPath = path.join(__dirname, '../frontend');
 app.use(express.static(frontendPath));
 
 var server = http.createServer(app);
 server.listen(config.port);
 
 // --- Setup persistent stores ---
-var resultStore = new Datastore({filename:'results', autoload:true});
-var emailStore = new Datastore({filename:'emails', autoload:true});
+var resultStore = new Datastore({filename:'../data/results', autoload:true});
+var emailStore = new Datastore({filename:'../data/emails', autoload:true});
 
 // --- Setup socket.io ---
 var transport = io.listen(server);
+
+// --- Setup evaluation server ---
+var evaluationServer = new EvaluationServer(taskFromConfig(problem), {port: config.evaluation_port});
 
 // --- Setup result distribution ---
 var dist = new ObjDist(transport, {prefix:'results'});
@@ -46,7 +80,6 @@ publishResults();
 
 transport.sockets.on('connection', function (socket) {
     var userData;
-    var evaluator;
 
     socket.on('email', function (email) {
         addEmail(email);
@@ -54,78 +87,60 @@ transport.sockets.on('connection', function (socket) {
 
     socket.on('handshake', function (data) {
         userData = data;
-        evaluator = setupEvaluator(userData.name, socket);
     });
 
     socket.on('evaluate', function (data) {
-        if (!userData || !evaluator) {
+        if (!userData) {
             socket.emit('status', {mode:'submission', success:false, message:'Needs handshake'});
             return;
         }
 
         socket.emit('status', {mode:'submission', success:true});
 
-        evaluator.setLanguage(data.language);
-        evaluator.setCodebody(data.codeBody);
+        var result = {
+            problemID:data.problemID,
+        impTime:data.impTime,
+        codeSize:codeSize(data.codeBody),
+        language:data.language,
+        name:userData.name
+        };
 
-        evaluator.once('result', function (result) {
-            result.problemID = data.problemID;
+        evaluationServer.evaluate(data.language, data.codeBody)
+        .then(function (runningTime) {
+            result.accepted = true;
+            result.runTime = runningTime;
 
-            if (result.accepted) {
-                result.runTime = formatTime(result.runningTime);
-                result.impTime = formatTime(data.impTime);
-                result.codeSize = codeSize(data.codeBody);
+            // send result back to client
+            dist.once('update', function () {
+                var results = dist.getObject();
 
-                var storedResult = {
-                    problemID:result.problemID,
-                    runTime:result.runningTime,
-                    impTime:data.impTime,
-                    codeSize:result.codeSize,
-                    language:data.language,
-                    name:userData.name
-                };
+                for (var idx in results) {
+                    var rankedResult = results[idx];
 
-                dist.once('update', function () {
-                    var results = dist.getObject();
-
-                    for (var idx in results) {
-                        var rankedResult = results[idx];
-
-                        if (rankedResult.name == storedResult.name && rankedResult.problemID == storedResult.problemID) {
-                            result.rank = rankedResult.rank;
-                            break;
-                        }
+                    if (rankedResult.name == result.name && rankedResult.problemID == result.problemID) {
+                        socket.emit('result', rankedResult);
+                        break;
                     }
+                }
+            });
 
-                    socket.emit('result', result)
-                });
-
-                addResult(storedResult);
-            } else {
-                socket.emit('result', result)
+            // store result
+            socket.emit('status', {mode:'testing', success: true});
+            addResult(result);
+        },
+        function (state, data) {
+            result.accepted = false;
+            socket.emit('status', {mode:'testing', success: false});
+            socket.emit('result', result)
+        },
+        function (event, status) {
+            if (event === 'compile') {
+                socket.emit('status', {mode:'compilation', success: true});
+                socket.emit('status', {mode:'testing', pending: true});
             }
         });
-
-        evaluator.evaluate(function (error) {});
     });
 });
-
-function setupEvaluator(name, socket) {
-    var evaluator = new SandboxEvaluator(path.resolve(name), config.uid);
-    evaluator.setProblem(problem);
-
-    evaluator.on('status', function (status) {
-        if (status.mode != 'assembly') {
-            socket.emit('status', status);
-        }
-    });
-
-    evaluator.on('error', function (error) {
-        console.error(error);
-    });
-
-    return evaluator;
-}
 
 function addResult(result) {
     var query = {
