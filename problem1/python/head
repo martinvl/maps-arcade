@@ -1,3 +1,0 @@
-from sys import stdin, stderr, stdout
-from time import time;
-
