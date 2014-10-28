@@ -17,3 +17,6 @@ numvms=8
 
 # the disk image
 disk="wheezy.img"
+
+# cache
+cache="none"

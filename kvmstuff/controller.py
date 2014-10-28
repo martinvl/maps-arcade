@@ -31,7 +31,7 @@ def vmselect(vms, sock):
 class VM:
 	disk  = config.disk
 	fmt   = "raw"
-	cache = "none"
+	cache = config.cache
 	aio   = "native"
 	mem   = "256"
 	cores = "1"
