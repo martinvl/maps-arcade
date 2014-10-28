@@ -23,7 +23,7 @@ html, body
 {
     margin: 0px 5px 5px 5px;
     width: 49%;
-    height: -webkit-calc(100% - 36px);
+    height: -webkit-calc(100% - 36px); height: -moz-calc(100% - 36px);
     padding: 0px 10px;
     box-sizing: border-box;
     background-color: #4b4b4b;
@@ -121,28 +121,28 @@ html, body
 
 .name
 {
-    width: -webkit-calc(20% - 5px);
+    width: -webkit-calc(20% - 5px); width: -moz-calc(20% - 5px);
 }
 
 .language
 {
-    width: -webkit-calc(20% - 10px);
+    width: -webkit-calc(20% - 10px); width: -moz-calc(20% - 10px);
 }
 
 .imp_time
 {
-    width: -webkit-calc(20% - 10px);
+    width: -webkit-calc(20% - 10px); width: -moz-calc(20% - 10px);
     text-align: center;
 }
 
 .run_time
 {
-    width: -webkit-calc(20% - 10px);
+    width: -webkit-calc(20% - 10px); width: -moz-calc(20% - 10px);
     text-align: center;
 }
 
 .code_size
 {
-    width: -webkit-calc(20% - 10px);
+    width: -webkit-calc(20% - 10px); width: -moz-calc(20% - 10px);
     text-align: center;
 }
