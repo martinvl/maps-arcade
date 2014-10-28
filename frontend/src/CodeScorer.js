@@ -105,11 +105,9 @@ CodeScorer.prototype.setupStatus = function () {
     this.statusContainer.id = 'status_container';
 
     this.setupInfoView();
-    this.setupConfigView();
     this.setupStatusView();
 
     this.statusContainer.appendChild(this.infoView);
-    this.statusContainer.appendChild(this.configView);
     this.statusContainer.appendChild(this.statusView);
     this.statusContainer.appendChild(createClear());
 
@@ -129,33 +127,6 @@ CodeScorer.prototype.setupInfoView = function () {
     infoBox.id = 'info_box';
     infoBox.innerHTML = this.problem.definition;
     this.infoView.appendChild(infoBox);
-};
-
-CodeScorer.prototype.setupConfigView = function () {
-    this.configView = document.createElement('div');
-    this.configView.className = 'status_container';
-
-    var header = document.createElement('h3');
-    header.innerHTML = 'Setup';
-    this.configView.appendChild(header);
-
-    this.nicknameField = document.createElement('div');
-    this.nicknameField.className = 'info_part top selected';
-    this.nicknameField.style.textAlign = 'center'; // XXX
-    this.nicknameField.innerHTML = 'martinvl'; // XXX
-    this.configView.appendChild(this.nicknameField);
-
-    this.languageField = document.createElement('div');
-    this.languageField.className = 'info_part middle';
-    this.languageField.style.textAlign = 'center'; // XXX
-    this.languageField.innerHTML = 'Java'; // XXX
-    this.configView.appendChild(this.languageField);
-
-    this.editorStyleField = document.createElement('div');
-    this.editorStyleField.className = 'info_part bottom';
-    this.editorStyleField.style.textAlign = 'center'; // XXX
-    this.editorStyleField.innerHTML = 'Vim'; // XXX
-    this.configView.appendChild(this.editorStyleField);
 };
 
 CodeScorer.prototype.setupStatusView = function () {
@@ -192,8 +163,6 @@ CodeScorer.prototype.setupStatusView = function () {
 CodeScorer.prototype.setPlayer = function (player) {
     this.player = player || {};
     this.sendHandshake();
-
-    this.nicknameField.innerHTML = this.player.nickname || '';
 };
 
 CodeScorer.prototype.setLanguage = function (language) {
@@ -221,8 +190,6 @@ CodeScorer.prototype.setLanguage = function (language) {
 
     this.editor.setOption('mode', mode);
     this.editor.setValue(defaultCode);
-
-    this.languageField.innerHTML = languageName;
 };
 
 CodeScorer.prototype.setEditorStyle = function (editorStyle) {
@@ -245,8 +212,6 @@ CodeScorer.prototype.setEditorStyle = function (editorStyle) {
 
     this.editor.setOption('keyMap', keyMap);
     this.editor.setOption('vimMode', editorStyle === 'vim');
-
-    this.editorStyleField.innerHTML = editorName;
 };
 
 CodeScorer.prototype.reset = function () {

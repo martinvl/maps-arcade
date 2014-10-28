@@ -60,8 +60,8 @@ setupView.on('next', function (setup) {
     submissionView.setLanguage(setup.language);
     submissionView.setEditorStyle(setup.editor);
     submissionView.setPlayer({
-        nickname:setup.nickname,
-        email:setup.email
+        nickname: setup.nickname,
+        email:    setup.email
     });
 
     setSetupViewVisible(false);
@@ -83,7 +83,7 @@ submissionView.on('result', function (result) {
             result.runTime + ' running time',
             result.codeSize + ' characters',
             formatStanding(result.rank) + ' place (currently)'
-            ];
+        ];
         statusView.setScores(scores);
     } else {
         statusView.setTitle('Timeout');
