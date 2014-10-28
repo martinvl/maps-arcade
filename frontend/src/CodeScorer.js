@@ -364,7 +364,8 @@ CodeScorer.prototype.sendCodeBody = function () {
         problemID:this.problem.ID,
         language:this.language,
         impTime:this.timerView.getTime(),
-        codeBody:this.editor.getValue()
+        // These spaces are invisible and make compiler errors. Annoying!
+        codeBody:this.editor.getValue().replace(/\xa0/g, ' ')
     });
 };
 
