@@ -20,7 +20,7 @@ document.body.appendChild(evalstatusView.el);
 function syncobject(url, callback) {
     var sock = io.connect(url);
     sock.on('error', function(err) {
-	console.trace(err);
+        console.trace(err);
         sock.socket.reconnect();
     });
     var sync = new objsync(sock, {delimiter:'/'});
