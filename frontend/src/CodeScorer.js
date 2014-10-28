@@ -124,7 +124,6 @@ CodeScorer.prototype.setupInfoView = function () {
 
     var infoBox = document.createElement('div');
     infoBox.className = 'info';
-    infoBox.id = 'info_box';
     infoBox.innerHTML = this.problem.definition;
     this.infoView.appendChild(infoBox);
 };
@@ -138,25 +137,14 @@ CodeScorer.prototype.setupStatusView = function () {
     this.statusView.appendChild(header);
 
     var submissionField = document.createElement('div');
-    submissionField.className = 'info_part top selected';
-    this.submissionIndicator = document.createElement('div');
-    submissionField.appendChild(this.submissionIndicator);
-    submissionField.appendChild(document.createTextNode('Submission'));
+    submissionField.className = 'info';
+    this.statusIndicator = document.createElement('div');
+    this.statusBox = document.createElement('div');
+    this.statusBox.innerHTML = '';
+    submissionField.appendChild(this.statusIndicator);
+    submissionField.appendChild(this.statusBox);
+    this.resetStatus();
     this.statusView.appendChild(submissionField);
-
-    var compilationField = document.createElement('div');
-    compilationField.className = 'info_part middle selected';
-    this.compilationIndicator = document.createElement('div');
-    compilationField.appendChild(this.compilationIndicator);
-    compilationField.appendChild(document.createTextNode('Compilation'));
-    this.statusView.appendChild(compilationField);
-
-    var testingField = document.createElement('div');
-    testingField.className = 'info_part bottom selected';
-    this.testingIndicator = document.createElement('div');
-    testingField.appendChild(this.testingIndicator);
-    testingField.appendChild(document.createTextNode('Testing'));
-    this.statusView.appendChild(testingField);
 };
 
 // ----- Setters -----
@@ -235,9 +223,7 @@ CodeScorer.prototype.refresh = function () {
 };
 
 CodeScorer.prototype.resetStatus = function () {
-    updateIndicator(this.submissionIndicator, 'failed');
-    updateIndicator(this.compilationIndicator, 'failed');
-    updateIndicator(this.testingIndicator, 'failed');
+    this.updateIndicator('idle', 'Idle');
 };
 
 // ----- State handling -----
@@ -256,10 +242,6 @@ CodeScorer.prototype.updateCharCount = function () {
 
 CodeScorer.prototype.submit = function () {
     this.setLocked(true);
-
-    updateIndicator(this.submissionIndicator, 'pending');
-    updateIndicator(this.compilationIndicator, 'failed');
-    updateIndicator(this.testingIndicator, 'failed');
 
     this.sendCodeBody();
 };
@@ -285,28 +267,7 @@ CodeScorer.prototype.setupConnection = function () {
 
     var self = this;
     this.socket.on('status', function (payload) {
-        var indicator;
-        switch (payload.mode) {
-            case 'submission':
-                indicator = self.submissionIndicator;
-                break;
-            case 'compilation':
-                indicator = self.compilationIndicator;
-                break;
-            case 'testing':
-                indicator = self.testingIndicator;
-                break;
-        }
-
-        var status = 'failed';
-
-        if (payload.success) {
-            status = 'success';
-        } else if (payload.pending) {
-            status = 'pending';
-        }
-
-        updateIndicator(indicator, status);
+        self.updateIndicator(payload.status, payload.message);
     });
 
     this.socket.on('result', function (result) {
@@ -327,29 +288,22 @@ CodeScorer.prototype.sendHandshake = function () {
 CodeScorer.prototype.sendCodeBody = function () {
     this.socket.emit('evaluate', {
         problemID:this.problem.ID,
-        language:this.language,
-        impTime:this.timerView.getTime(),
+        language: this.language,
+        impTime:  this.timerView.getTime(),
         // These spaces are invisible and make compiler errors. Annoying!
-        codeBody:this.editor.getValue().replace(/\xa0/g, ' ')
+        codeBody: this.editor.getValue().replace(/\xa0/g, ' ')
     });
 };
 
-function updateIndicator(indicator, mode) {
+CodeScorer.prototype.updateIndicator = function(mode, text) {
     var className = 'status_light ';
 
-    switch (mode) {
-        case 'success':
-            className += 'green';
-            break;
-        case 'pending':
-            className += 'yellow';
-            break;
-        case 'failed':
-            className += 'red';
-            break;
-    }
+    // Should produce errors too
+    className += {idle: 'gray', success: 'green', pending: 'yellow', failed: 'red'}[mode];
 
-    indicator.className = className;
+    this.statusIndicator.className = className;
+
+    this.statusBox.innerHTML = text;
 }
 
 function createClear() {

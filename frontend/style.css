@@ -258,6 +258,12 @@ input[type=text].invalid
 
 .info
 {
+    /* moved from #info_box */
+    /*font-size: 14px; not needed as the box got bigger*/
+    height: 86px;
+    vertical-align: middle;
+    line-height: 19px;
+
     background-color: #bbb;
     color: #222;
     width: 100%;
@@ -376,6 +382,10 @@ input[type=text]:focus {
     background-color: rgba(0, 255, 0, 0.7);
 }
 
+.gray {
+    background-color: rgba(127, 127, 127, 0.7);
+}
+
 .ring {
     background-color:#bbbbbb;
     border: 2px solid #717171;
@@ -448,14 +458,6 @@ input[type=text]:focus {
     float: left;
     margin-left: 5px;
     margin-right: 5px;
-}
-
-#info_box
-{
-    font-size: 14px;
-    height: 86px;
-    vertical-align: middle;
-    line-height: 19px;
 }
 
 .container

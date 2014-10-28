@@ -95,17 +95,19 @@ transport.sockets.on('connection', function (socket) {
     });
 
     socket.on('evaluate', function (data) {
+        // Frontend 'status' event:
+        // Needs status and message:
+        // Status: idle, success, pending, failed
         if (!userData) {
-            socket.emit('status', {mode:'submission', success:false, message:'Needs handshake'});
+            socket.emit('status', {status:'failed', message:'Needs handshake'});
             return;
         }
         if(requestActive == true) {
-            // Just ignore the client
-            // socket.emit('status', {mode:'submission', success:false, message:'Only one request allowed at a time'});
+            // Make sure client does not update the field by itself
             return;
         }
 
-        socket.emit('status', {mode:'submission', success:true});
+        socket.emit('status', {status:'pending', message:'Compiling'});
         requestActive = true;
 
         var result = {
@@ -118,6 +120,10 @@ transport.sockets.on('connection', function (socket) {
         };
 
         var eval = evaluationServer.evaluate(data.language, data.codeBody);
+
+        // To determine where we failed
+        var progress = 'compiling';
+
         if(eval) eval
         .then(function (runningTime) {
             // On success
@@ -128,28 +134,32 @@ transport.sockets.on('connection', function (socket) {
             results.sendResult(result, socket);
 
             // store result
-            socket.emit('status', {mode:'testing', success: true});
+            socket.emit('status', {status:'success', message: 'Success!'});
             results.addResult(result);
             requestActive = false;
         },
         function (state, data) {
             // Fail
             result.accepted = false;
-            socket.emit('status', {mode:'testing', success: false});
+            socket.emit('status', {
+                status:'failed',
+                message: (progress=='compiling') ?
+                    'Did not compile' : 'Failed during testing'
+            });
             socket.emit('result', result)
             requestActive = false;
         },
         function (event, status) {
             // Other events
             if (event === 'compile') {
+                progress = 'testing';
                 // Testing in progress
-                socket.emit('status', {mode:'compilation', success: true});
-                socket.emit('status', {mode:'testing', pending: true});
+                socket.emit('status', {status:'pending', message: 'Testing'});
             }
         });
         else {
             // We have no test servers available
-            socket.emit('status', {mode:'submission', success: false, message: 'No evaluation servers available'});
+            socket.emit('status', {status:'failed', message: 'Backend has no eval servers'});
             requestActive = false;
         }
     });
