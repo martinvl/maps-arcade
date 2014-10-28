@@ -64,6 +64,9 @@ app.use(express.static(frontendPath));
 var server = http.createServer(app);
 server.listen(config.port);
 
+// --- Setup persistent stores ---
+var emailStore = new Datastore({filename:'../data/emails', autoload:true});
+
 // --- Setup socket.io ---
 var transport = io.listen(server);
 
