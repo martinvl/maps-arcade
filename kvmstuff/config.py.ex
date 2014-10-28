@@ -14,3 +14,6 @@ connect_timeout=1
 
 # numvms, no more than cores available
 numvms=8
+
+# the disk image
+disk="wheezy.img"

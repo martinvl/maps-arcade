@@ -29,7 +29,7 @@ def vmselect(vms, sock):
 	return (rvms, thesock)
 
 class VM:
-	disk  = "wheezy.img"
+	disk  = config.disk
 	fmt   = "raw"
 	cache = "none"
 	aio   = "native"
