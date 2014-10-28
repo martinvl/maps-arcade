@@ -10,7 +10,7 @@ var EvaluationClient = require('./EvaluationClient');
 function EvaluationServer(problem, opts, transport, path) {
     this.problem = problem;
     this.opts = opts || {};
-    this.evalstatus = new ObjDist(transport, path);
+    this.evalstatus = new ObjDist(transport, {prefix:path});
     this.setStatus();
 
     this.setup();
