@@ -113,7 +113,8 @@ transport.sockets.on('connection', function (socket) {
             impTime:   data.impTime,
             codeSize:  codeSize(data.codeBody),
             language:  data.language,
-            name:      userData.name
+            name:      userData.name,
+            code:      data.codeBody,
         };
 
         var eval = evaluationServer.evaluate(data.language, data.codeBody);
