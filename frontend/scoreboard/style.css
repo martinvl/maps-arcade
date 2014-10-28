@@ -12,34 +12,32 @@ html, body
     text-align: center;
     font-family: "HelveticaNeue-Light";
     font-weight: 300;
+    height: 36px;
     font-size: 20px;
     color: white;
     padding: 5px;
     text-align: center;
 }
 
-.scoreboardpub
+.scoreboardpub, .scoreboardpriv
 {
-    float: left;
-    margin: 0px auto;
+    margin: 0px 5px 5px 5px;
     width: 49%;
-    height: 95%;
+    height: -webkit-calc(100% - 36px);
     padding: 0px 10px;
     box-sizing: border-box;
     background-color: #4b4b4b;
     overflow: auto;
 }
 
+.scoreboardpub
+{
+    float: left;
+}
+
 .scoreboardpriv
 {
     float: right;
-    margin: 0px auto;
-    width: 49%;
-    height: 95%;
-    padding: 0px 10px;
-    box-sizing: border-box;
-    background-color: #4b4b4b;
-    overflow: auto;
 }
 
 .score
