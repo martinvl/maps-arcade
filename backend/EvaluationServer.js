@@ -3,14 +3,15 @@ var inherits = require('inherits');
 var Q = require('q');
 var WebSocketServer = require('ws').Server;
 var _ = require('underscore');
+var ObjDist = require('objdist');
 
 var EvaluationClient = require('./EvaluationClient');
 
-function EvaluationServer(problem, opts, evalstatus) {
+function EvaluationServer(problem, opts, transport, path) {
     this.problem = problem;
     this.opts = opts || {};
-    this.evalstatus = evalstatus;
-    evalstatus.setObject({});
+    this.evalstatus = new ObjDist(transport, path);
+    this.setStatus();
 
     this.setup();
 }

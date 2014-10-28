@@ -6,8 +6,8 @@ var EvaluationServer = require('./EvaluationServer');
 var fs = require('fs');
 var http = require('http');
 var io = require('socket.io');
-var ObjDist = require('objdist');
 var path = require('path');
+var Results = require('./Results');
 
 var configPath = process.argv[2] || process.env.npm_package_config || 'config.json';
 
@@ -64,23 +64,24 @@ app.use(express.static(frontendPath));
 var server = http.createServer(app);
 server.listen(config.port);
 
-// --- Setup persistent stores ---
-var resultStore = new Datastore({filename:'../data/results', autoload:true});
-var emailStore = new Datastore({filename:'../data/emails', autoload:true});
-
 // --- Setup socket.io ---
 var transport = io.listen(server);
 
 // --- Setup evaluation server ---
-var evalstatus = new ObjDist(transport, {prefix:'evalstatus'});
-var evaluationServer = new EvaluationServer(taskFromConfig(problem), {port: config.evaluation_port}, evalstatus);
+var evaluationServer = new EvaluationServer(taskFromConfig(problem), {port: config.evaluation_port}, transport, 'evalstatus');
 
 // --- Setup result distribution ---
-var dist = new ObjDist(transport, {prefix:'results'});
-publishResults();
+var pubresults = new Results(transport, 'pubresults', '../data/pubresults');
+var privresults = new Results(transport, 'privresults', '../data/privresults');
 
 transport.sockets.on('connection', function (socket) {
     var userData;
+    var requestActive = false;
+    // select the correct list based on address
+    var priv = socket.conn.remoteAddress == config.privaddr;
+    var results = priv ? privresults : pubresults;
+
+    console.log("frontend connection from "+socket.handshake.address+" is"+(priv ? "" : " not")+" private");
 
     socket.on('email', function (email) {
         addEmail(email);
@@ -95,73 +96,60 @@ transport.sockets.on('connection', function (socket) {
             socket.emit('status', {mode:'submission', success:false, message:'Needs handshake'});
             return;
         }
+        if(requestActive == true) {
+            // Just ignore the client
+            // socket.emit('status', {mode:'submission', success:false, message:'Only one request allowed at a time'});
+            return;
+        }
 
         socket.emit('status', {mode:'submission', success:true});
+        requestActive = true;
 
         var result = {
-            problemID:data.problemID,
-        impTime:data.impTime,
-        codeSize:codeSize(data.codeBody),
-        language:data.language,
-        name:userData.name
+            problemID: data.problemID,
+            impTime:   data.impTime,
+            codeSize:  codeSize(data.codeBody),
+            language:  data.language,
+            name:      userData.name
         };
 
         var eval = evaluationServer.evaluate(data.language, data.codeBody);
         if(eval) eval
         .then(function (runningTime) {
+            // On success
             result.accepted = true;
             result.runTime = runningTime;
 
             // send result back to client
-            dist.once('update', function () {
-                var results = dist.getObject();
-
-                for (var idx in results) {
-                    var rankedResult = results[idx];
-
-                    if (rankedResult.name == result.name && rankedResult.problemID == result.problemID) {
-                        socket.emit('result', rankedResult);
-                        break;
-                    }
-                }
-            });
+            results.sendResult(result, socket);
 
             // store result
             socket.emit('status', {mode:'testing', success: true});
-            addResult(result);
+            results.addResult(result);
+            requestActive = false;
         },
         function (state, data) {
+            // Fail
             result.accepted = false;
             socket.emit('status', {mode:'testing', success: false});
             socket.emit('result', result)
+            requestActive = false;
         },
         function (event, status) {
+            // Other events
             if (event === 'compile') {
+                // Testing in progress
                 socket.emit('status', {mode:'compilation', success: true});
                 socket.emit('status', {mode:'testing', pending: true});
             }
         });
         else {
-            socket.emit('status', {mode:'compilation', success: false});
+            // We have no test servers available
+            socket.emit('status', {mode:'submission', success: false, message: 'No evaluation servers available'});
+            requestActive = false;
         }
     });
 });
-
-function addResult(result) {
-    var query = {
-        'problemID':result.problemID,
-        'name':result.name
-    };
-
-    resultStore.update(query, result, {upsert:true}, function (err) {
-        if (err) {
-            console.dir(err);
-            return;
-        }
-
-        publishResults();
-    });
-}
 
 function addEmail(email) {
     var query = {
@@ -174,66 +162,6 @@ function addEmail(email) {
             return;
         }
     });
-}
-
-function getRankedResults(results) {
-    results = results.slice(0); // copy
-
-    results.sort(function (lhs, rhs) {
-        var lhsBadness =  lhs.impTime * lhs.runTime * lhs.codeSize;
-        var rhsBadness =  rhs.impTime * rhs.runTime * rhs.codeSize;
-
-        return lhsBadness/rhsBadness - 1;
-    });
-
-    for (var rank in results) {
-        results[rank].rank = parseInt(rank) + 1;
-    }
-
-
-    return results;
-}
-
-function publishResults() {
-    resultStore.find({}, function (err, results) {
-        if (err) {
-            console.dir(err);
-            return;
-        }
-
-        results = getRankedResults(results);
-
-        for (var idx in results) {
-            var result = results[idx];
-
-            result.impTime = formatTime(result.impTime);
-            result.runTime = formatTime(result.runTime);
-        }
-
-        dist.setObject(results);
-    });
-}
-
-function formatTime(time) {
-    var formattedTime = '';
-
-    if (time < 1/1000) {
-        formattedTime = Math.round(time*1000000) + '&mu;s';
-    } else if (time < 1/10) {
-        formattedTime = Math.round(time*1000) + 'ms';
-    } else {
-        time = Math.round(time*100)/100;
-
-        if (time == Math.round(time)) {
-            formattedTime = time + '.00s';
-        } else if (time == Math.round(time*10)/10) {
-            formattedTime = time + '0s';
-        } else {
-            formattedTime = time + 's';
-        }
-    }
-
-    return formattedTime;
 }
 
 function codeSize(code) {
