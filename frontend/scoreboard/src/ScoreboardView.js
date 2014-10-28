@@ -1,6 +1,7 @@
 var ScoreView = require('./ScoreView');
 
-function ScoreboardView() {
+function ScoreboardView(title) {
+    this.title = title;
     this.setup();
     this.reset();
 }
@@ -10,6 +11,11 @@ module.exports = ScoreboardView;
 ScoreboardView.prototype.setup = function () {
     this.el = document.createElement('div');
     this.el.className = 'scoreboard';
+
+    var title = document.createElement('div');
+    title.className = 'title';
+    title.innerHTML = this.title;
+    this.el.appendChild(title);
 
     var legend = document.createElement('div');
     legend.className = 'legend';
