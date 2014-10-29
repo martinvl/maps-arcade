@@ -97,7 +97,7 @@ Results.prototype.publishResults = function() {
 
             result.impTime = self.formatTime(result.impTime);
             result.runTime = self.formatTime(result.runTime);
-	    results[idx] = _.pick(result, ['problemID', 'rank', 'language', 'name', 'impTime', 'runTime', 'codeSize']);
+            results[idx] = _.pick(result, ['problemID', 'rank', 'language', 'name', 'impTime', 'runTime', 'codeSize', 'accepted']);
         }
 
         self.dist.setObject(results);
