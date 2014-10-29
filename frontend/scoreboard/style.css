@@ -9,6 +9,9 @@ html, body
 
 .evalstatus
 {
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
     text-align: center;
     font-family: "HelveticaNeue-Light";
     font-weight: 300;
@@ -22,8 +25,8 @@ html, body
 .scoreboardpub, .scoreboardpriv
 {
     margin: 0px 5px 5px 5px;
-    width: 49%;
-    height: -webkit-calc(100% - 36px); height: -moz-calc(100% - 36px);
+    width: 48%;
+    height: -webkit-calc(100% - 50px); height: -moz-calc(100% - 50px);
     padding: 0px 10px;
     box-sizing: border-box;
     background-color: #4b4b4b;
