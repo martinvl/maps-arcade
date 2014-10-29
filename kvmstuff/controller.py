@@ -255,8 +255,16 @@ class VM:
 				# Finally
 				status2 = 0 # Correct
 
+
 			ws.eval(self.submissionId, self.testid, status2, stderr, wtime)
-			if status2 != 0:
+			# Continue whatever happens if it's optional
+			kill = False
+			if self.test["optional"] and status2 == 1:
+				kill = True
+			elif not self.test["optional"] and status2 != 0:
+				kill = True
+
+			if kill:
 				# A failed test case
 				self.endsub()
 				self.kill()
@@ -463,6 +471,12 @@ class upstream:
 		# Sometimes, this is easier to manage than going through everything
 		global problem
 		problem = data
+
+		# Correct for optional not always being present
+		for prob in problem["test"]:
+			p = problem["test"][prob]
+			if not "optional" in p:
+				p["optional"] = False
 
 # Connect to websockets (try, at least)
 ws = upstream(config.name, config.connect, config.connect_timeout)
