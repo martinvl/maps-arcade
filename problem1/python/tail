@@ -2,7 +2,7 @@
 n = int(stdin.read())
 
 start = time();
-result = d(n)
+result = D(n)
 end = time();
 
 running_time = end - start
