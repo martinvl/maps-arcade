@@ -1,3 +1,5 @@
+var EventEmitter = require('events').EventEmitter;
+var inherits = require('inherits');
 var ObjDist = require('objdist');
 var Datastore = require('nedb');
 var _ = require('underscore');
@@ -9,37 +11,78 @@ function Results(transport, prefix, filename) {
 }
 
 module.exports = Results;
+inherits(Results, EventEmitter);
 
 Results.prototype.sendResult = function(result, socket) {
     var self = this;
-    this.dist.once('update', function(){
+    this.once('publish', function(){
         var results = self.dist.getObject();
 
         for (var idx in results) {
             var rankedResult = results[idx];
 
             if (rankedResult.name == result.name && rankedResult.problemID == result.problemID) {
-                socket.emit('result', rankedResult);
-                break;
+                var sendResult = _.clone(result);
+
+                sendResult.rank = rankedResult.rank;
+                sendResult.impTime = self.formatTime(result.impTime);
+                sendResult.runTime = self.formatTime(result.runTime);
+                sendResult = _.pick(sendResult, ['problemID', 'rank', 'language', 'name', 'impTime', 'runTime', 'codeSize', 'accepted']);
+
+                socket.emit('result', sendResult);
+                console.dir(result);
+                return;
             }
         }
+        console.err("Results.prototype.sendResult: We are asked to send the result for "+result.name+" at problem "+result.problemID+" but no such result exists!");
     });
 };
 
+// We are forced to call self.publishResults() at some point.
 Results.prototype.addResult = function(result) {
+    // TODO: Q
     var query = {
         'problemID': result.problemID,
         'name':      result.name
     };
-
     var self = this;
-    this.store.update(query, result, {upsert:true}, function (err) {
+
+    // We need to get the results before we formatted them and added them to the public object
+    // Only interested in this users results
+    this.store.find(query, function(err, results) {
         if (err) {
             console.dir(err);
             return;
         }
 
-        self.publishResults();
+        var update = true;
+        for (var idx in results) {
+            var rankedResult = results[idx];
+
+            // This one is worse (Is my operator pointing the right way?)
+            if (result_cmp(rankedResult, result) < 0) {
+                console.log("Old result is better, not updating: (old, new):");
+                console.log(rankedResult);
+                console.log(result);
+                update = false;
+            } else {
+                console.log("New result is better, updating");
+            }
+            break;
+        }
+
+        if (update) {
+            self.store.update(query, result, {upsert:true}, function (err) {
+                if (err) {
+                    console.dir(err);
+                    return;
+                }
+
+                self.publishResults();
+            });
+        } else {
+            self.publishResults();
+        }
     });
 };
 
@@ -66,14 +109,10 @@ Results.prototype.formatTime = function(time) {
 };
 
 Results.prototype.getRankedResults = function(results) {
+    // TODO: Why copy?
     var results = results.slice(0); // copy
 
-    results.sort(function (lhs, rhs) {
-        var lhsBadness = (1e-7 + lhs.impTime) * (1e-7 + lhs.runTime) * (1 + lhs.codeSize);
-        var rhsBadness = (1e-7 + rhs.impTime) * (1e-7 + rhs.runTime) * (1 + rhs.codeSize);
-
-        return lhsBadness/rhsBadness - 1;
-    });
+    results.sort(result_cmp);
 
     for (var rank in results) {
         results[rank].rank = parseInt(rank) + 1;
@@ -101,5 +140,13 @@ Results.prototype.publishResults = function() {
         }
 
         self.dist.setObject(results);
+        self.emit('publish');
     });
 };
+
+function result_cmp(lhs, rhs) {
+    var lhsBadness = (1e-7 + lhs.impTime) * (1e-7 + lhs.runTime) * (1 + lhs.codeSize);
+    var rhsBadness = (1e-7 + rhs.impTime) * (1e-7 + rhs.runTime) * (1 + rhs.codeSize);
+
+    return lhsBadness/rhsBadness - 1;
+}
