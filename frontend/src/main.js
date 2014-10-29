@@ -31,12 +31,12 @@ $.getJSON('/problem', function (data) {
             statusView.setSuccess(true);
 
             var scores = [
-        result.impTime + ' implementation time',
-        result.runTime + ' running time',
-        result.codeSize + ' characters',
-        formatStanding(result.rank) + ' place (currently)'
-        ];
-    statusView.setScores(scores);
+                result.impTime + ' implementation time',
+                result.runTime + ' running time',
+                result.codeSize + ' characters',
+                formatStanding(result.rank) + ' place (currently)'
+            ];
+            statusView.setScores(scores);
         } else {
             statusView.setTitle('Timeout');
             statusView.setSuccess(false);
