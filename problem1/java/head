@@ -9,7 +9,7 @@ public class task {
         int n = input.nextInt();
 
         long start = System.nanoTime();
-        int result = d(n);
+        int result = D(n);
         long end = System.nanoTime();
 
         System.out.println(result);
