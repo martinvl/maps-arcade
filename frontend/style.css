@@ -75,35 +75,6 @@ h1.red, h1.green
     color: rgba(255, 255, 255, 0.6);
 }
 
-
-.info_box
-{
-    height: 140px;
-    width: 240px;
-    padding: 30px;
-    line-height: 70px;
-
-    background-color: rgba(100, 100, 100, 0.5);
-    border-radius: 10px;
-
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 20%;
-
-    text-align: center;
-}
-
-.info_box > span
-{
-    font-family: "HelveticaNeue-Light";
-    font-weight: 300;
-
-    font-size: 20px;
-
-    display: block;
-    width: 100%;
-}
-
 div > a
 {
     text-decoration: none;
@@ -260,7 +231,7 @@ input[type=text].invalid
 {
     /* moved from #info_box */
     /*font-size: 14px; not needed as the box got bigger*/
-    height: 86px;
+    /*height: 86px;*/
     vertical-align: middle;
     line-height: 19px;
 
@@ -445,16 +416,20 @@ input[type=text]:focus {
     cursor: default;
 }
 
+/* outer */
 #status_container
 {
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
     display: inline-block;
 }
 
+/* inner */
 .status_container
 {
-    width: 240px;
+    /*width: 240px;*/
+    width: 100%;
     float: left;
     margin-left: 5px;
     margin-right: 5px;
