@@ -303,7 +303,7 @@ CodeScorer.prototype.updateIndicator = function(mode, text) {
 
     this.statusIndicator.className = className;
 
-    this.statusBox.innerHTML = text;
+    this.statusBox.innerHTML = text.replace(/\n/g, '<br />\n');
 }
 
 function createClear() {
