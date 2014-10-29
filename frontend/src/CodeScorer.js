@@ -176,8 +176,6 @@ CodeScorer.prototype.setLanguage = function (language) {
             break;
     }
 
-    console.log(mode);
-    console.log(defaultCode);
     this.editor.setOption('mode', mode);
     this.editor.setValue(defaultCode);
 };
@@ -289,7 +287,7 @@ CodeScorer.prototype.sendHandshake = function () {
 
 CodeScorer.prototype.sendCodeBody = function () {
     this.socket.emit('evaluate', {
-        problemID:this.problem.id,
+        problemID: this.problem.id,
         language: this.language,
         impTime:  this.timerView.getTime(),
         // These spaces are invisible and make compiler errors. Annoying!
