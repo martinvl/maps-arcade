@@ -8,6 +8,7 @@ var http = require('http');
 var io = require('socket.io');
 var path = require('path');
 var Results = require('./Results');
+var _ = require('underscore');
 
 var configPath = process.argv[2] || process.env.npm_package_config || 'config.json';
 
@@ -20,6 +21,16 @@ try {
 
 try {
     var problem = JSON.parse(fs.readFileSync(config.problem_config));
+    var publicProblem = _.pick(problem, [
+        'id',
+        'codingTimeout',
+        'pythonDefault',
+        'cDefault',
+        'javaDefault',
+        'description',
+        'definition',
+        'examples'
+    ]);
 } catch (error) {
     console.error('ERROR: Could not read problem at ' + config.problem_config);
 }
@@ -60,6 +71,11 @@ var app = express();
 
 var frontendPath = path.join(__dirname, '../frontend');
 app.use(express.static(frontendPath));
+
+app.get('/problem', function (req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(publicProblem));
+});
 
 var server = http.createServer(app);
 server.listen(config.port);
