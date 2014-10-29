@@ -89,7 +89,7 @@ def demote():
 	# TODO: Return measured CPU time from subprocess
 	#print "Ram limit: " + str(demote_ram) +" MB"
 	if cpu != 0:
-		resource.setrlimit(resource.RLIMIT_CPU,   (cpu, cpu+1))
+		resource.setrlimit(resource.RLIMIT_CPU,   (cpu+1, cpu+1))
 	if ram != 0:
 		resource.setrlimit(resource.RLIMIT_AS,    (ram, ram))
 		resource.setrlimit(resource.RLIMIT_DATA,  (ram, ram))
