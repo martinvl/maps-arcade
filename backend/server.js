@@ -59,6 +59,7 @@ function taskFromConfig(problem){
     for(var i in problem.tests) {
         t = problem.tests[i];
         data.test[t.id] = {
+            optional: t.optional,
             input:  rf(problem.testdataPath+"/"+t.inputPath),
             output: rf(problem.testdataPath+"/"+t.solutionPath),
         };
