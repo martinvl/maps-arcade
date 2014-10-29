@@ -69,8 +69,8 @@ Results.prototype.getRankedResults = function(results) {
     var results = results.slice(0); // copy
 
     results.sort(function (lhs, rhs) {
-        var lhsBadness = lhs.impTime * lhs.runTime * lhs.codeSize;
-        var rhsBadness = rhs.impTime * rhs.runTime * rhs.codeSize;
+        var lhsBadness = (1e-7 + lhs.impTime) * (1e-7 + lhs.runTime) * (1 + lhs.codeSize);
+        var rhsBadness = (1e-7 + rhs.impTime) * (1e-7 + rhs.runTime) * (1 + rhs.codeSize);
 
         return lhsBadness/rhsBadness - 1;
     });
