@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# Kills VMs 5 seconds after time limit
+
+
 from subprocess import *
 import re
 from serial import Serial
@@ -270,11 +273,11 @@ class VM:
 			self.endsub("VM timelimit exceeded")
 			self.kill()
 
-
 	def sub_testcase(self):
 		# Next testcase
 		if self.testcases == None:
-			self.testcases = problem["test"].keys()
+			self.testcases = sorted(problem["test"].keys())
+			print self.testcases
 
 		if self.testcase == None:
 			self.testcase = 0
