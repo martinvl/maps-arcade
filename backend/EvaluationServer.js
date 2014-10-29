@@ -123,7 +123,7 @@ EvaluationServer.prototype.handleReceivedEvent = function (payload, client) {
             var submission = this.submissions[payload.data.submissionId];
 
             if (payload.data.success !== 0) {
-		// event, status
+                // event, status
                 submission.reject({event:'compile', status:payload.data});
             } else {
                 submission.notify({event:'compile', status:payload.data});

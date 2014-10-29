@@ -156,21 +156,21 @@ transport.sockets.on('connection', function (socket) {
         },
         function (payload) {
             // reject
-	    var event = payload.event;
-	    var status = payload.status;
-	    var message = '';
+            var event = payload.event;
+            var status = payload.status;
+            var message = '';
 
             result.accepted = false;
-	    if(progress == 'compiling'){
-		    message = 'Did not compile:\n' + status.stderr;
-	    } else {
-		if(status == 1) message = 'Wrong answer';
-		else if(status == 2) message = 'Program crashed';
-		else if(status == 3) message = 'Timeout expired';
-		else {
-			message = ""+status;
-		}
-	    }
+            if(progress == 'compiling'){
+                message = 'Did not compile:\n' + status.stderr;
+            } else {
+                if(status == 1) message = 'Wrong answer';
+                else if(status == 2) message = 'Program crashed';
+                else if(status == 3) message = 'Timeout expired';
+                else {
+                        message = ""+status;
+                }
+            }
 
             socket.emit('status', {
                 status:'failed',
@@ -181,9 +181,9 @@ transport.sockets.on('connection', function (socket) {
         },
         function (payload) {
             // notify
-	    var event = payload.event;
-	    var status = payload.status;
-	    console.log(["notify", event,status]);
+            var event = payload.event;
+            var status = payload.status;
+            console.log(["notify", event,status]);
             if (event === 'compile') {
                 progress = 'testing';
                 // Testing in progress
