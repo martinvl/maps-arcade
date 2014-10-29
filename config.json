@@ -2,6 +2,6 @@
    "uid":501,
    "port":8080,
    "evaluation_port": 8081,
-   "problem_config":"problem2.json",
+   "problem_config":"problem1.json",
    "privaddr": "127.0.0.1"
 }
