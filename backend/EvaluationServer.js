@@ -80,11 +80,11 @@ EvaluationServer.prototype.handleConnection = function (socket) {
     });
 
     socket.on('error', function (err) {
-        client.deferred.reject(err);
+        client.deferred.reject({event:'error', status:err});
     });
 
     socket.on('close', function () {
-        client.deferred.reject('connection closed');
+        client.deferred.reject({event:'error', status:'connection closed'});
         delete self.clients[clientId];
         delete self.idleClients[clientId];
         self.setStatus();
@@ -123,9 +123,10 @@ EvaluationServer.prototype.handleReceivedEvent = function (payload, client) {
             var submission = this.submissions[payload.data.submissionId];
 
             if (payload.data.success !== 0) {
-                submission.reject('compile', payload);
+		// event, status
+                submission.reject({event:'compile', status:payload.data});
             } else {
-                submission.notify('compile', payload);
+                submission.notify({event:'compile', status:payload.data});
             }
             break;
         case 'eval':
@@ -133,19 +134,19 @@ EvaluationServer.prototype.handleReceivedEvent = function (payload, client) {
             submission.evalTime += payload.data.walltime;
 
             if (payload.data.success !== 0) {
-                submission.reject('eval', payload);
+                submission.reject({event:'eval', status:payload.data.success});
             } else {
                 ++submission.numAccepted;
-                submission.notify('eval', submission.numAccepted);
+                submission.notify({event:'eval', status:submission.numAccepted});
             }
             break;
         case 'endsub':
             var submission = this.submissions[payload.data.submissionId];
 
             if (payload.data.errstr) {
-                submission.reject('error', payload.data.errstr);
+                submission.reject({event:'error', status:payload.data.errstr});
             } else {
-                submission.resolve(submission.evalTime, payload);
+                submission.resolve(submission.evalTime);
             }
 
             break;
