@@ -28,8 +28,8 @@
    "pythonDefault":"def D(n):",
    "javaDefault":"public static int D(int n) {\n}",
    "cDefault":"int D(int n)\n{\n}",
-   "description":"Implement the function <i>D</i> which for a given integer <i>n</i>, returns <i>D<sub>n</sub></i> where\n<i>D<sub>0</sub></i> = 1\n<i>D<sub>1</sub></i> = 1\n...\n<i>D<sub>n</sub></i> = <i>D<sub>n - 1</sub></i> - <i>D<sub>n - 2</sub></i>",
-   "definition":"<i>D<sub>0</sub></i> = 1\n<i>D<sub>1</sub></i> = 1\n...\n<i>D<sub>n</sub></i> = <i>D<sub>n - 1</sub></i> - <i>D<sub>n - 2</sub></i>",
+   "description":"Implement the function <i>D</i> which for a given integer <i>n</i>, returns <i>D<sub>n</sub></i> where<br/><i>D<sub>0</sub></i> = 1<br/><i>D<sub>1</sub></i> = 1<br/>...<br/><i>D<sub>n</sub></i> = <i>D<sub>n - 1</sub></i> - <i>D<sub>n - 2</sub></i>",
+   "definition":"<i>D<sub>0</sub></i> = 1<br/><i>D<sub>1</sub></i> = 1<br/>...<br/><i>D<sub>n</sub></i> = <i>D<sub>n - 1</sub></i> - <i>D<sub>n - 2</sub></i>",
    "examples":[
         "If <i>n</i> = 10, then <i>D</i> should return -1.",
         "If <i>n</i> = 20, then <i>D</i> should return 0."
