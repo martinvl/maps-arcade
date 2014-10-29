@@ -1,5 +1,6 @@
 var ObjDist = require('objdist');
 var Datastore = require('nedb');
+var _ = require('underscore');
 
 function Results(transport, prefix, filename) {
     this.dist = new ObjDist(transport, {prefix:prefix});
@@ -96,6 +97,7 @@ Results.prototype.publishResults = function() {
 
             result.impTime = self.formatTime(result.impTime);
             result.runTime = self.formatTime(result.runTime);
+	    results[idx] = _.pick(result, ['problemID', 'rank', 'language', 'name', 'impTime', 'runTime', 'codeSize']);
         }
 
         self.dist.setObject(results);
