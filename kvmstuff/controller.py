@@ -249,6 +249,9 @@ class VM:
 				status2 = 3 # Timeout, hard or soft
 			elif status < 0:
 				status2 = 2 # Crash
+			elif status != 0:
+				# Catch-all crash
+				status2 = 2
 			elif stdout != self.test["output"]:
 				status2 = 1 # Wrong
 			else:
@@ -256,15 +259,13 @@ class VM:
 				status2 = 0 # Correct
 
 
-			ws.eval(self.submissionId, self.testid, status2, stderr, wtime)
 			# Continue whatever happens if it's optional
-			kill = False
-			if self.test["optional"] and status2 == 1:
-				kill = True
-			elif not self.test["optional"] and status2 != 0:
-				kill = True
+			if self.test["optional"] and (status2 == 2 or status2 == 3):
+				wtime = float(problem["timelimit"])
+				status2 = 0
 
-			if kill:
+			ws.eval(self.submissionId, self.testid, status2, stderr, wtime)
+			if status2 != 0:
 				# A failed test case
 				self.endsub()
 				self.kill()
