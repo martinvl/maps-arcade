@@ -1,0 +1,14 @@
+
+lines = stdin.readlines()
+m = int(lines[0])
+a = map(int, lines[1].split())
+n = int(lines[2])
+b = map(int, lines[3].split())
+
+start = time();
+result = largest_number_in_both_lists(a, b)
+end = time();
+
+running_time = end - start
+stdout.write('%ld\n' % result);
+stderr.write('%f\n' % running_time);
