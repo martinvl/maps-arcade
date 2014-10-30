@@ -203,7 +203,7 @@ class VM:
 
 		if data["cmd"] == "compile" and data["status"] == "started":
 			# Set watchdog
-			self.expiry = time.time() + 5.
+			self.expiry = time.time() + config.compiletime + 5
 			# Not interested
 			return
 

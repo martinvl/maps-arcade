@@ -92,7 +92,8 @@ EvaluationServer.prototype.handleConnection = function (socket) {
 };
 
 EvaluationServer.prototype.handleReceivedEvent = function (payload, client) {
-    console.dir(payload);
+    // Debugs everything received from the server
+    //console.dir(payload);
     switch (payload.event) {
         case 'ready':
             client.ready = true;
@@ -199,11 +200,6 @@ EvaluationServer.prototype.sendProblem = function (problem, client) {
 };
 EvaluationServer.prototype.setStatus = function () {
     this.evalstatus.setObject(_.map(this.clients, function(client) {
-        return {
-            id: client.id,
-            name: client.name,
-            max: client.max,
-            cur: client.cur
-        };
+        return _.pick(client, ['id', 'name', 'max', 'cur']);
     }));
 };
