@@ -23,7 +23,31 @@
    "testdataPath":"problem2/testdata",
    "timeout":5000,
    "tests":
-       [{"inputPath": "test1.in", "optional": false, "solutionPath": "test1.ans", "id": "test1"}, {"inputPath": "test2.in", "optional": false, "solutionPath": "test2.ans", "id": "test2"}, {"inputPath": "test3.in", "optional": false, "solutionPath": "test3.ans", "id": "test3"}, {"inputPath": "test4.in", "optional": false, "solutionPath": "test4.ans", "id": "test4"}, {"inputPath": "test5.in", "optional": false, "solutionPath": "test5.ans", "id": "test5"}, {"inputPath": "test6.in", "optional": false, "solutionPath": "test6.ans", "id": "test6"}, {"inputPath": "test7.in", "optional": false, "solutionPath": "test7.ans", "id": "test7"}, {"inputPath": "test8.in", "optional": false, "solutionPath": "test8.ans", "id": "test8"}, {"inputPath": "test9.in", "optional": false, "solutionPath": "test9.ans", "id": "test9"}, {"inputPath": "test10.in", "optional": false, "solutionPath": "test10.ans", "id": "test10"}, {"inputPath": "test11.in", "optional": false, "solutionPath": "test11.ans", "id": "test11"}, {"inputPath": "test12.in", "optional": false, "solutionPath": "test12.ans", "id": "test12"}, {"inputPath": "test13.in", "optional": false, "solutionPath": "test13.ans", "id": "test13"}, {"inputPath": "test14.in", "optional": false, "solutionPath": "test14.ans", "id": "test14"}, {"inputPath": "test15.in", "optional": false, "solutionPath": "test15.ans", "id": "test15"}, {"inputPath": "test16.in", "optional": false, "solutionPath": "test16.ans", "id": "test16"}, {"inputPath": "test17.in", "optional": false, "solutionPath": "test17.ans", "id": "test17"}, {"inputPath": "test18.in", "optional": false, "solutionPath": "test18.ans", "id": "test18"}, {"inputPath": "test19.in", "optional": false, "solutionPath": "test19.ans", "id": "test19"}, {"inputPath": "test20.in", "optional": false, "solutionPath": "test20.ans", "id": "test20"}, {"inputPath": "test21.in", "optional": false, "solutionPath": "test21.ans", "id": "test21"}, {"inputPath": "test22.in", "optional": false, "solutionPath": "test22.ans", "id": "test22"}],
+       [
+           {"inputPath": "test1.in",  "optional": false, "solutionPath": "test1.ans",  "id": "test1" }, 
+           {"inputPath": "test2.in",  "optional": false, "solutionPath": "test2.ans",  "id": "test2" }, 
+           {"inputPath": "test3.in",  "optional": false, "solutionPath": "test3.ans",  "id": "test3" }, 
+           {"inputPath": "test4.in",  "optional": false, "solutionPath": "test4.ans",  "id": "test4" }, 
+           {"inputPath": "test5.in",  "optional": false, "solutionPath": "test5.ans",  "id": "test5" }, 
+           {"inputPath": "test6.in",  "optional": false, "solutionPath": "test6.ans",  "id": "test6" }, 
+           {"inputPath": "test7.in",  "optional": false, "solutionPath": "test7.ans",  "id": "test7" }, 
+           {"inputPath": "test8.in",  "optional": false, "solutionPath": "test8.ans",  "id": "test8" }, 
+           {"inputPath": "test9.in",  "optional": false, "solutionPath": "test9.ans",  "id": "test9" }, 
+           {"inputPath": "test10.in", "optional": false, "solutionPath": "test10.ans", "id": "test10"}, 
+           {"inputPath": "test11.in", "optional": false, "solutionPath": "test11.ans", "id": "test11"}, 
+           {"inputPath": "test12.in", "optional": false, "solutionPath": "test12.ans", "id": "test12"}, 
+           {"inputPath": "test13.in", "optional": false, "solutionPath": "test13.ans", "id": "test13"}, 
+           {"inputPath": "test14.in", "optional": false, "solutionPath": "test14.ans", "id": "test14"}, 
+           {"inputPath": "test15.in", "optional": false, "solutionPath": "test15.ans", "id": "test15"}, 
+           {"inputPath": "test16.in", "optional": false, "solutionPath": "test16.ans", "id": "test16"}, 
+           {"inputPath": "test17.in", "optional": false, "solutionPath": "test17.ans", "id": "test17"}, 
+           {"inputPath": "test18.in", "optional": false, "solutionPath": "test18.ans", "id": "test18"}, 
+           {"inputPath": "test19.in", "optional": false, "solutionPath": "test19.ans", "id": "test19"}, 
+           {"inputPath": "test20.in", "optional": false, "solutionPath": "test20.ans", "id": "test20"}, 
+           {"inputPath": "test21.in", "optional": false, "solutionPath": "test21.ans", "id": "test21"}, 
+           {"inputPath": "test22.in", "optional": false, "solutionPath": "test22.ans", "id": "test22"},
+           {"inputPath": "test23.in", "optional": false, "solutionPath": "test23.ans", "id": "test23"}
+       ],
    "codingTimeout": 120,
    "pythonDefault":"def largest_number_in_both_lists(a, b):",
    "javaDefault":"public static int largestNumberInBothLists(int[] a, int[] b) {\n}",
@@ -31,7 +55,7 @@
    "description":"Implement the function <i>largestNumberInBothLists</i> which for two given integer arrays <i>a</i> and <i>b</i>, returns the largest number that exists in both arrays",
    "definition":"<i>largestNumberInBothLists</i> should return the <i>largest</i> number that exists in both <i>a</i> and <i>b</i>",
    "examples":[
-        "If<br/><i>a</i> = [8, 7, 2, 1]<br/><i>a</i> = [9, 7, 4, 3]<br/>then <i>largestNumberInBothLists</i> should return 7.",
-        "If<br/><i>a</i> = [4, 3, 2, 1]<br/><i>a</i> = [4, 3, 2]<br/>then <i>largestNumberInBothLists</i> should return 4."
+        "If<br/><i>a</i> = [8, 7, 2, 1]<br/><i>b</i> = [9, 7, 4, 3]<br/>then <i>largestNumberInBothLists</i> should return 7.",
+        "If<br/><i>a</i> = [4, 3, 2, 1]<br/><i>b</i> = [4, 3, 2]<br/>then <i>largestNumberInBothLists</i> should return 4."
     ]
 }

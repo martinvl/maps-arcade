@@ -21,7 +21,7 @@ html, body
 .big_box
 {
     display: inline-block;
-    width: 300px;
+    width: 400px;
     padding: 10px;
 
     background-color: rgba(100, 100, 100, 0.5);
@@ -45,7 +45,7 @@ html, body
 
 .big_box.wide
 {
-    width: 500px;
+    width: 600px;
 }
 
 h3
@@ -163,7 +163,8 @@ input[type=text]
     padding-left: 5px;
     padding-right: 5px;
     margin: 0px;
-    width: 290px;
+    width: -webkit-calc(100% - 10px);
+    width: -moz-calc(100% - 10px);
     height: 32px;
 
     background-color: #707070;
@@ -285,7 +286,8 @@ input[type=text]:focus {
     display: inline-block;
     margin-left: 5px;
     margin-right: 5px;
-    width: 145px;
+    width: -moz-calc(50% - 10px);
+    width: -webkit-calc(50% - 10px);
 }
 
 .select_box:first-child
@@ -304,7 +306,7 @@ input[type=text]:focus {
     max-height: 32px;
     line-height: 32px;
     vertical-align: middle;
-    width: 145px;
+    width: 100%;
 
     cursor: pointer;
 }

@@ -4,6 +4,8 @@
 OFFSET=2048
 # Image
 IMAGE=wheezy.img
+#IMAGE=ramfs/wheezy.img
+
 # destination
 DEST=loop
 DEST2=$DEST/usr/local/sbin/vmcontroller

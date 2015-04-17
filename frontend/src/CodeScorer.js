@@ -43,7 +43,7 @@ CodeScorer.prototype.setupTimerView = function () {
 
     var self = this;
     this.timerView.on('timeout', function () {
-        self.timeout();
+        //self.timeout();
     });
 };
 

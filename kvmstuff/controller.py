@@ -179,6 +179,8 @@ class VM:
 			print "Read from VM exception: "+str(e)
 			return
 
+		print data
+
 		if data == None:
 			print "(None)"
 			return

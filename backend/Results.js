@@ -145,8 +145,11 @@ Results.prototype.publishResults = function() {
 };
 
 function result_cmp(lhs, rhs) {
-    var lhsBadness = (1e-7 + lhs.impTime) * (1e-7 + lhs.runTime) * (1 + lhs.codeSize);
-    var rhsBadness = (1e-7 + rhs.impTime) * (1e-7 + rhs.runTime) * (1 + rhs.codeSize);
+    // var lhsBadness = (1e-7 + lhs.impTime) * (1e-7 + lhs.runTime) * (1 + lhs.codeSize);
+    // var rhsBadness = (1e-7 + rhs.impTime) * (1e-7 + rhs.runTime) * (1 + rhs.codeSize);
+    // hack: ignore impTime
+    var lhsBadness = (1e-7 + lhs.runTime) * (1 + lhs.codeSize);
+    var rhsBadness = (1e-7 + rhs.runTime) * (1 + rhs.codeSize);
 
     return lhsBadness/rhsBadness - 1;
 }

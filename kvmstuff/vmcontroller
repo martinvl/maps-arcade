@@ -21,7 +21,7 @@ sourcefile = {
 	"python": "task.py"
 }
 flags = {
-	"c": ["-O2", "-Wall", "-Wextra", "-lrt", "-std=gnu99"],
+	"c": ["-O3", "-Wall", "-Wextra", "-lrt", "-std=gnu99"],
 	"java": [],
 	"python": ["-m", "py_compile"]
 }
