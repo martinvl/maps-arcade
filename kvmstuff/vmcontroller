@@ -1,0 +1,309 @@
+#!/usr/bin/python
+
+# Script to communicate with host
+import sys
+import serial
+import time
+import json
+import subprocess
+import os
+import resource
+import time
+
+writedir = "/home/jailed/ram"
+drop_uid = 1000
+drop_gid = 1000
+
+langlist = ["c", "python", "java"]
+sourcefile = {
+	"c":      "task.c",
+	"java":   "task.java",
+	"python": "task.py"
+}
+flags = {
+	"c": ["-O3", "-Wall", "-Wextra", "-lrt", "-std=gnu99"],
+	"java": [],
+	"python": ["-m", "py_compile"]
+}
+compiler = {
+	"c":      "/usr/bin/gcc-4.7",
+	"java":   "/usr/bin/javac",
+	"python": "/usr/bin/python"
+}
+
+# Variables used
+language     = None
+testcase     = None
+demote_time  = None
+demote_ram   = None
+demote_nproc = True
+
+def validint(string):
+	try:
+		int(string)
+		return True
+	except:
+		return False
+
+def serwrite(things):
+	enc = json.dumps(things)
+	# print "Writing some stuff + "+str(len(enc))+"+1 bytes"
+	ser.write(str(len(enc))+"\n"+enc+"\n")
+	# print "done"
+
+def serread():
+	lengthstr = ""
+	while True:
+		char = os.read(ser2, 1)
+		if char == '\n':
+			break
+		elif len(char) == 0:
+			break
+		else:
+			lengthstr += char
+	if len(lengthstr) == 0:
+		return None
+
+	try:
+		length = int(lengthstr)
+		# print "reading "+str(length)+"+1 bytes"
+		# Bad idea goes here:
+		data = ""
+		while len(data) < length+1:
+			data += os.read(ser2, length+1-len(data))
+		# print "done"
+		return json.loads(data)
+	except Exception as e:
+		print "Read exception: "+str(e)
+		return None
+def sererr(err):
+	serwrite({"cmd":"err", "str":str(err)})
+	print "Error: "+str(err)
+
+
+def demote():
+	ram = demote_ram * 1048576
+	cpu = demote_time
+	# setrlimit: resource, (soft, hard)
+
+	# TODO: Return measured CPU time from subprocess
+	#print "Ram limit: " + str(demote_ram) +" MB"
+	if cpu != 0:
+		resource.setrlimit(resource.RLIMIT_CPU,   (cpu+1, cpu+1))
+	if ram != 0:
+		resource.setrlimit(resource.RLIMIT_AS,    (ram, ram))
+		resource.setrlimit(resource.RLIMIT_DATA,  (ram, ram))
+		resource.setrlimit(resource.RLIMIT_STACK, (ram, ram))
+
+	# Maximum of 10 processes. Why 10? java..
+	# Count includes the program itself
+	# the compilers like to fork too..
+	if demote_nproc:
+		resource.setrlimit(resource.RLIMIT_NPROC, (10, 10));
+
+	# This process is a little less worth
+	os.nice(5)
+	os.setgid(drop_gid)
+	os.setuid(drop_uid)
+	os.chdir(writedir)
+
+def kill_dropuid():
+	os.system("pkill -SIGKILL -u "+str(drop_uid))
+	os.system("pkill -SIGKILL -G "+str(drop_gid))
+
+def compile_source(codefile, language, dtime):
+	"""
+	Compile
+	returns a touple: (output, retcode)
+	"""
+	global demote_ram, demote_time, demote_nproc
+	# Don't memlimit ram, it only leads to hell when javac tries to run
+	demote_ram  = 0
+	demote_time = dtime
+	demote_nproc = True
+
+	if language == 'c':
+		cmd = [compiler["c"]]+flags["c"]+[codefile, "-o", "task"]
+	elif language == 'java':
+		cmd = [compiler["java"]]+flags["java"]+[codefile]
+	elif language == 'python':
+		cmd = [compiler["python"]]+flags["python"]+[codefile]
+
+	# Print all compile commands
+	# print "Running: "+" ".join(cmd)
+	start = time.time()
+	p = subprocess.Popen(cmd, preexec_fn=demote, stdout=None, stdin=None, stderr=subprocess.PIPE)
+	out, err = p.communicate()
+	walltime = time.time() - start
+
+	# Remove any lingering processes, just in case
+	kill_dropuid()
+
+	return (err, p.returncode, walltime)
+
+def run(maxram, maxtime):
+	global demote_ram, demote_time, demote_nproc
+	demote_ram  = maxram
+	demote_time = maxtime
+	demote_nproc = True
+
+	runfile = writedir = "/home/jailed/ram"
+	if language == 'c':
+		cmd = ["./task"]
+	elif language == 'java':
+		demote_ram = 0
+		if maxram:
+			cmd = ["java", "-Xmx"+str(maxram)+"m", "task"]
+		else:
+			cmd = ["java", "task"]
+	elif language == 'python':
+		cmd = ["python", "task.py"]
+	else:
+		return ("", "", "1")
+
+	# Print all run commands
+	# print "Running: "+" ".join(cmd)
+	start = time.time()
+	p = subprocess.Popen(cmd,
+			     preexec_fn=demote,
+			     stdout=subprocess.PIPE,
+			     stdin=subprocess.PIPE,
+			     stderr=subprocess.PIPE)
+	out, err = p.communicate(testcase)
+	status = p.returncode
+	walltime = time.time() - start
+	# Remove any lingering processes, in case they tried to start a daemon
+	kill_dropuid()
+	return (out, err, status, walltime)
+
+if len(sys.argv) < 3:
+	print "Usage: vmcontroller <outtty> <intty>"
+	sys.exit(1)
+
+ser = serial.Serial("/dev/"+sys.argv[1], interCharTimeout=None)
+ser2 = os.open("/dev/"+sys.argv[2], os.O_RDWR)
+
+serwrite({"cmd":"ready"})
+while True:
+	data = serread()
+	if data == None:
+		# In case the server is not connected
+		time.sleep(0.2)
+		continue
+
+	if type(data) != dict:
+		sererr("JSON: Not a dictionary type")
+		continue
+
+	if not "cmd" in data:
+		sererr("Invalid JSON detected: lacks cmd")
+		continue
+
+	# Dump all incoming stuff
+	#print data
+
+	# FORMAT: length \n json (with length) \n
+	# JSON must be a dictionary: {}
+	# JSON must contain cmd: <cmd>
+	# We respond with the same cmd, and we always respond to the previous command
+	# If we have an error, we respond with cmd = err and str = error
+
+
+	# cmd -> reaction
+
+	# ping -> send pong
+	if data["cmd"]=='ping':
+		serwrite({"cmd":"ping"})
+		continue
+
+	# compile -> compile users code, sends completed
+	#	Special for java: Main class NEEDS to be named "task"
+	#	NOTE: all limits are skipped if set to 0
+	#	JSON needs:
+	#		lang (language: c, java, python)
+	#		compiletime (int seconds)
+	#		code
+	#	You get back:
+	#		possibly error? if cmd = err
+	#		status: started
+	#		possibly error? if cmd = err
+	#		string out: stderr of compiler
+	#		int status: If compile succeeded or not
+	if data["cmd"]=='compile':
+		# Input validation
+		if not "compiletime" in data or not validint(data["compiletime"]):
+			sererr("Invalid JSON detected: lacks/invalid compiletime (cmd = compile)")
+			continue
+		if not "code" in data:
+			sererr("Invalid JSON detected: lacks code (cmd = compile)")
+			continue
+		if not "lang" in data:
+			sererr("Invalid JSON detected: lacks lang (cmd = compile)")
+			continue
+		if not data["lang"] in langlist:
+			sererr("Invalid JSON detected: incorrect lang (cmd = compile)")
+			continue
+		# Set global
+		language    = data["lang"]
+
+		codefile = writedir + "/" + sourcefile[language]
+		try:
+			fp = open(codefile, "w")
+			fp.write(bytearray(data["code"], "utf-8"))
+			fp.close()
+		except Exception as e:
+			sererr("Problem writing code file: "+str(e))
+			continue
+
+		try:
+			serwrite({"cmd":"compile", "status":"started"})
+			out, success, wt = compile_source(codefile, language, int(data["compiletime"]))
+			serwrite({"cmd":"compile", "out": str(out), "status": int(success), "walltime": wt})
+		except Exception as e:
+			sererr("Problem compiling: "+str(e))
+			continue
+		continue
+
+	# testcase -> downloads testcase (testcases are stdin to the program)
+	#	Saved to variable "testcase"
+	#	NOTE: returns only cmd = testcase
+	if data["cmd"]=='testcase':
+		print "Reading testcase"
+		# Input validation
+		if not "text" in data:
+			sererr("Invalid JSON detected: lacks text (cmd = testcase)")
+			continue
+
+		testcase = data["text"]
+		serwrite({"cmd":"testcase"})
+		continue
+
+	# run -> runs code, sends started, sends completed. Sends output to pipes that we can read.
+	#	NOTE: Runs on current testcase
+	#	NOTE: return out and err
+	#	NOTE: TODO cap out/err at 1MB each
+	#	NOTE: all limits are skipped if set to 0
+	#	Extra data will be:
+	#		time limit
+	#		memory limit
+	#	Return will be:
+	#		possibly error
+	#		started
+	#		possibly error
+	#		ended: out, err, status
+	if data["cmd"]=='run':
+		if not "ram" in data or not validint(data["ram"]):
+			sererr("Invalid JSON detected: lacks/invalid ram (cmd = run)")
+			continue
+		if not "time" in data or not validint(data["time"]):
+			sererr("Invalid JSON detected: lacks/invalid time (cmd = run)")
+			continue
+		try:
+			serwrite({"cmd":"run", "status":"started"})
+			out, err, status, wt = run(int(data["ram"]), int(data["time"]))
+			serwrite({"cmd":"run", "out": str(out), "err": str(err), "status": int(status), "walltime": wt})
+		except Exception as e:
+			sererr("Problem running program: "+str(e))
+			continue
+
+# vim: set noexpandtab shiftwidth=8 tabstop=8 softtabstop=8:

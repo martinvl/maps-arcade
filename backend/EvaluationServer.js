@@ -2,12 +2,16 @@ var EventEmitter = require('events').EventEmitter;
 var inherits = require('inherits');
 var Q = require('q');
 var WebSocketServer = require('ws').Server;
+var _ = require('underscore');
+var ObjDist = require('objdist');
 
 var EvaluationClient = require('./EvaluationClient');
 
-function EvaluationServer(problem, opts) {
+function EvaluationServer(problem, opts, transport, path) {
     this.problem = problem;
     this.opts = opts || {};
+    this.evalstatus = new ObjDist(transport, {prefix:path});
+    this.setStatus();
 
     this.setup();
 }
@@ -32,17 +36,19 @@ EvaluationServer.prototype.evaluate = function (language, src) {
     var self = this;
 
     function send() {
-        self.sendSubmission(submission.data, self.getClient()).fail(function (err) {
+        var client = self.getClient();
+        if(!client) {
+            console.error('failed to get a client');
+            return false;
+        }
+        self.sendSubmission(submission.data, client).fail(function (err) {
             console.error('failed sending submission to client');
             console.error(err);
-
-            console.error('retrying...');
-            send();
         });
+        return true;
     }
-    send();
-
-    return submission.promise;
+    if(send()) return submission.promise;
+    return undefined;
 };
 
 // --- interal API ---
@@ -74,21 +80,24 @@ EvaluationServer.prototype.handleConnection = function (socket) {
     });
 
     socket.on('error', function (err) {
-        client.deferred.reject(err);
+        client.deferred.reject({event:'error', status:err});
     });
 
     socket.on('close', function () {
-        client.deferred.reject('connection closed');
+        client.deferred.reject({event:'error', status:'connection closed'});
         delete self.clients[clientId];
         delete self.idleClients[clientId];
+        self.setStatus();
     });
 };
 
 EvaluationServer.prototype.handleReceivedEvent = function (payload, client) {
-    console.dir(payload);
+    // Debugs everything received from the server
+    //console.dir(payload);
     switch (payload.event) {
         case 'ready':
             client.ready = true;
+            client.name = payload.data.name;
 
             if (client.idle) {
                 this.idleClients[client.id] = client;
@@ -98,7 +107,9 @@ EvaluationServer.prototype.handleReceivedEvent = function (payload, client) {
             this.sendProblem(this.problem, client);
             break;
         case 'freeslots':
-            client.idle = payload.data.cur > 0;
+            client.cur = payload.data.cur;
+            client.max = payload.data.max;
+            client.idle = client.cur > 0;
 
             if (client.ready) {
                 if (client.idle) {
@@ -106,15 +117,17 @@ EvaluationServer.prototype.handleReceivedEvent = function (payload, client) {
                 } else {
                     delete this.idleClients[client.id];
                 }
+                this.setStatus();
             }
             break;
         case 'compile':
             var submission = this.submissions[payload.data.submissionId];
 
             if (payload.data.success !== 0) {
-                submission.reject('compile', payload);
+                // event, status
+                submission.reject({event:'compile', status:payload.data});
             } else {
-                submission.notify('compile', payload);
+                submission.notify({event:'compile', status:payload.data});
             }
             break;
         case 'eval':
@@ -122,19 +135,19 @@ EvaluationServer.prototype.handleReceivedEvent = function (payload, client) {
             submission.evalTime += payload.data.walltime;
 
             if (payload.data.success !== 0) {
-                submission.reject('eval', payload);
+                submission.reject({event:'eval', status:payload.data.success});
             } else {
                 ++submission.numAccepted;
-                submission.notify('eval', submission.numAccepted);
+                submission.notify({event:'eval', status:submission.numAccepted});
             }
             break;
         case 'endsub':
             var submission = this.submissions[payload.data.submissionId];
 
             if (payload.data.errstr) {
-                submission.reject('error', payload.data.errstr);
+                submission.reject({event:'error', status:payload.data.errstr});
             } else {
-                submission.resolve(submission.evalTime, payload);
+                submission.resolve(submission.evalTime);
             }
 
             break;
@@ -184,4 +197,9 @@ EvaluationServer.prototype.sendProblem = function (problem, client) {
     });
 
     return deferred.promise;
+};
+EvaluationServer.prototype.setStatus = function () {
+    this.evalstatus.setObject(_.map(this.clients, function(client) {
+        return _.pick(client, ['id', 'name', 'max', 'cur']);
+    }));
 };

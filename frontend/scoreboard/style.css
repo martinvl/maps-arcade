@@ -4,18 +4,43 @@ html, body
     padding: 0px;
     margin: 0px;
 
-    background-color: rgb(50, 50, 50);
+    background-color: #323232;
 }
 
-.scoreboard
+.evalstatus
 {
-    margin: 0px auto;
-    width: 60%;
-    height: 100%;
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+    text-align: center;
+    font-family: "HelveticaNeue-Light";
+    font-weight: 300;
+    height: 36px;
+    font-size: 20px;
+    color: white;
+    padding: 5px;
+    text-align: center;
+}
+
+.scoreboardpub, .scoreboardpriv
+{
+    margin: 0px 5px 5px 5px;
+    width: 48%;
+    height: -webkit-calc(100% - 50px); height: -moz-calc(100% - 50px);
     padding: 0px 10px;
     box-sizing: border-box;
     background-color: #4b4b4b;
-    overflow: scroll;
+    overflow: auto;
+}
+
+.scoreboardpub
+{
+    float: left;
+}
+
+.scoreboardpriv
+{
+    float: right;
 }
 
 .score
@@ -44,6 +69,22 @@ html, body
     font-size: 20px;
 }
 
+.title
+{
+    width: 100%;
+    color: #ddd;
+    margin-left: 0px;
+    margin-bottom: 10px;
+    background-color: #666;
+    line-height: 32px;
+    font-family: "HelveticaNeue-Light";
+    font-weight: 300;
+    font-size: 20px;
+    text-align: center;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
 .score:nth-child(even) > .score_box
 {
     background-color: #bbb;
@@ -66,12 +107,12 @@ html, body
 .legend_box:first-child
 {
     margin-left: 0px;
-    border-bottom-left-radius: 10px;
+    /*border-bottom-left-radius: 10px;*/
 }
 
 .legend_box:last-child
 {
-    border-bottom-right-radius: 10px;
+    /*border-bottom-right-radius: 10px;*/
 }
 
 .rank
@@ -83,28 +124,28 @@ html, body
 
 .name
 {
-    width: -webkit-calc(20% - 5px);
+    width: -webkit-calc(20% - 5px); width: -moz-calc(20% - 5px);
 }
 
 .language
 {
-    width: -webkit-calc(20% - 10px);
+    width: -webkit-calc(20% - 10px); width: -moz-calc(20% - 10px);
 }
 
 .imp_time
 {
-    width: -webkit-calc(20% - 10px);
+    width: -webkit-calc(20% - 10px); width: -moz-calc(20% - 10px);
     text-align: center;
 }
 
 .run_time
 {
-    width: -webkit-calc(20% - 10px);
+    width: -webkit-calc(20% - 10px); width: -moz-calc(20% - 10px);
     text-align: center;
 }
 
 .code_size
 {
-    width: -webkit-calc(20% - 10px);
+    width: -webkit-calc(20% - 10px); width: -moz-calc(20% - 10px);
     text-align: center;
 }

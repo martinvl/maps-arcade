@@ -1,15 +1,12 @@
 
 lines = stdin.readlines()
-N = int(lines[0])
-numbers = lines[1].split(' ')
-
-for i in range(0, len(numbers)):
-    numbers[i] = int(numbers[i])
-
-k = int(lines[2]);
+m = int(lines[0])
+a = map(int, lines[1].split())
+n = int(lines[2])
+b = map(int, lines[3].split())
 
 start = time();
-result = get_index(numbers, k)
+result = largest_number_in_both_lists(a, b)
 end = time();
 
 running_time = end - start

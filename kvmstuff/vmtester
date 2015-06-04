@@ -1,0 +1,260 @@
+#!/usr/bin/python
+
+# Script to communicate with host
+import sys
+import serial
+import time
+import json
+import subprocess
+
+def serwrite(things):
+	enc = json.dumps(things)
+	print "Writing "+str(len(enc))+"+1 bytes"
+	ser_out.write(str(len(enc))+"\n"+enc+"\n")
+
+def serread():
+	lengthstr = ""
+	while True:
+		char = ser_in.read(1)
+		if char == '\n':
+			break
+		elif len(char) == 0:
+			break
+		else:
+			lengthstr += char
+	if len(lengthstr) == 0:
+		return None
+
+	try:
+		length = int(lengthstr)
+		print "Reading "+str(length)+"+1 bytes"
+		data = ser_in.read(length+1)
+		return json.loads(data)
+	except Exception as e:
+		print "Error reading from VM: "+str(e)
+		return None
+def sererr(err):
+	serwrite({"cmd":"err", "str":str(err)})
+	print "Error: "+str(err)
+
+def send_run():
+	serwrite({"cmd":"run",
+		  "ram":30,
+		  "time":timelimit})
+
+def send_testcase():
+	serwrite({"cmd":"testcase",
+		  "text":testcase})
+
+def send_compile(lang):
+	print "\nTesting language " + lang
+	code = {
+		"c": """
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <memory.h>
+#include <signal.h>
+
+// Too much ram results in memset(NULL, ...): status -11 = segfault
+// #define HUGEMALLOC
+// Test how many processes we can create - 9
+// #define FORKCNT
+// Burn some cpu: status -24 = CPU limit exceeded
+// #define INFLOOP
+// no point in using signal(SIGXCPU) because the kernel gets mad and kills you with SIGKILL
+
+// Unhandled stuff: Will be fixed by timing out subprocesses and killing them, and limiting subprocess output, then killing every pid for that user
+
+// Make unlimited output, we can detect this now
+// #define SPAM
+// Infinite read: TO BE IMPLEMENTED, parent will kill vm
+// #define HANG
+// Forkbomb -- Even though the parent runs out of time, the children continue, kill the box in this case.
+// parent will kill vm
+// #define FORKBOMB
+
+
+#ifdef HUGEMALLOC
+#define ALLOC 100*1024*1024
+#endif
+
+// If we wanna test this
+#ifdef FORKCNT
+int forkcnt(){
+	int num = 0;
+	pid_t child;
+	while((child = fork()) >= 0){
+		if(child == 0){
+			sleep(1);
+			exit(0);
+		} else num++;
+	}
+	return num;
+}
+#endif
+
+int main(){
+	int len = 0;
+#ifdef INFLOOP
+	int a = 3;
+#endif
+#ifdef HUGEMALLOC
+	char *no = malloc(ALLOC);
+#endif
+	char in[1024*1024];
+
+#ifdef FORKBOMB
+	while(1) fork();
+#endif
+
+#ifdef HUGEMALLOC
+	memset(no, 0, ALLOC);
+#endif
+
+	len = fread(in, 1, sizeof(in), stdin);
+	write(1, in, len);
+	fprintf(stderr, "stderr test\\n");
+#ifdef INFLOOP
+	// Die from cpu overspending
+	while(1)
+		a++;
+#endif
+
+#ifdef FORKCNT
+	fprintf(stdout, "Number of children we can make: %i\\n", forkcnt());
+#endif
+
+#ifdef SPAM
+	while(1)
+#endif
+	return 3;
+}
+""",
+		"java": """
+class task {
+	public static void main(String[] args){
+		String out = "";
+		System.err.println("stderr test");
+		try {
+			int c;
+			while(true){
+				c = System.in.read();
+				if(c == -1)
+					break;
+				out += (char)c;
+			}
+		} catch(Exception e){
+			System.err.println("Oh no!");
+		}
+		System.out.print(out);
+		System.exit(3);
+	}
+}
+""",
+		"python": """
+import sys
+out = sys.stdin.read()
+sys.stdout.write(out)
+sys.stderr.write("stderr test\\n");
+sys.exit(3)
+""",
+	}
+	c = code[lang]
+	serwrite({"cmd":"compile",
+		  "lang":lang,
+		  "compiletime":10,
+		  "code":c})
+
+if len(sys.argv) < 3:
+	print "USAGE: vmtest <intty> <outtty>"
+	sys.exit(1)
+
+ser_in = serial.Serial("/dev/"+sys.argv[1])
+ser_out = serial.Serial("/dev/"+sys.argv[2])
+
+timelimit = 10 # seconds
+testcase = "TEST\x04\x00CASE\r\n"*90
+
+just_run = False
+seen_ready = False
+lang="c"
+
+serwrite({"cmd": "ping"})
+while True:
+	if just_run:
+		send_compile(lang)
+		just_run = False
+
+	data = serread()
+	if data == None:
+		continue
+
+	# Debug datastream
+	#print data
+
+	if not "cmd" in data:
+		sererr("Invalid JSON detected: lacks cmd")
+		continue
+
+	if data["cmd"] == 'ready' and not seen_ready:
+		send_compile(lang)
+		seen_ready = True
+		continue
+	elif data["cmd"] == "ready":
+		print "vmcontroller has rebooted, error out"
+		sys.exit(1)
+
+	if data["cmd"] == 'ping':
+		send_compile(lang)
+		continue
+
+	if data["cmd"] == 'compile' and data["status"] == "started":
+		continue
+
+	if data["cmd"] == 'compile':
+		# Compile finished
+		if len(data["out"]):
+			print "Compiler output: "+data["out"]
+		if data["status"] != 0:
+			print "VM failed to compile"
+			print "Status: "+str(data["status"])
+			sys.exit(1)
+		send_testcase()
+		continue
+
+	if data["cmd"] == 'testcase':
+		send_run()
+		continue
+
+	if data["cmd"] == 'run' and data["status"] == 'started':
+		continue
+
+	if data["cmd"] == 'run':
+		# print "stdout: ", [data["out"]]
+		print "stderr: ", [data["err"]]
+		print "status: "+str(data["status"])
+		print "time: "+str(data["walltime"])
+		if data["status"] != 3:
+			print "Program returned wrong exit status (expected 3)"
+			sys.exit(1)
+		if data["err"] != "stderr test\n":
+			print "Program returned wrong stderr output (expected stderr test\\n)"
+			sys.exit(1)
+		if data["out"] != testcase:
+			# print "Program returned wrong stdout output: ", [data["out"]]
+			print "Program returned wrong stdout output"
+			sys.exit(1)
+		# Completed a run
+		if lang == "c":
+			lang = "java"
+			just_run = True
+		elif lang == "java":
+			lang = "python"
+			just_run = True
+		else:
+			print "All languages are working"
+			sys.exit(0)
+		continue
+
+# vim: set noexpandtab shiftwidth=8 tabstop=8 softtabstop=8:

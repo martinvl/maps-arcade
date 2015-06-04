@@ -1,0 +1,20 @@
+import java.util.Scanner;
+
+public class task {
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+
+        double runningTime = 0;
+
+        int n = input.nextInt();
+
+        long start = System.nanoTime();
+        int result = D(n);
+        long end = System.nanoTime();
+
+        System.out.println(result);
+        runningTime = ((double)(end - start)) / Math.pow(10, 9);
+
+        System.err.println(runningTime);
+    }
+

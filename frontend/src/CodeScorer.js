@@ -38,12 +38,12 @@ CodeScorer.prototype.setup = function () {
 };
 
 CodeScorer.prototype.setupTimerView = function () {
-    this.timerView = new TimerView(this.problem.timeout);
+    this.timerView = new TimerView(this.problem.codingTimeout);
     this.el.appendChild(this.timerView.el);
 
     var self = this;
     this.timerView.on('timeout', function () {
-        self.timeout();
+        //self.timeout();
     });
 };
 
@@ -105,11 +105,9 @@ CodeScorer.prototype.setupStatus = function () {
     this.statusContainer.id = 'status_container';
 
     this.setupInfoView();
-    this.setupConfigView();
     this.setupStatusView();
 
     this.statusContainer.appendChild(this.infoView);
-    this.statusContainer.appendChild(this.configView);
     this.statusContainer.appendChild(this.statusView);
     this.statusContainer.appendChild(createClear());
 
@@ -126,36 +124,8 @@ CodeScorer.prototype.setupInfoView = function () {
 
     var infoBox = document.createElement('div');
     infoBox.className = 'info';
-    infoBox.id = 'info_box';
     infoBox.innerHTML = this.problem.definition;
     this.infoView.appendChild(infoBox);
-};
-
-CodeScorer.prototype.setupConfigView = function () {
-    this.configView = document.createElement('div');
-    this.configView.className = 'status_container';
-
-    var header = document.createElement('h3');
-    header.innerHTML = 'Setup';
-    this.configView.appendChild(header);
-
-    this.nicknameField = document.createElement('div');
-    this.nicknameField.className = 'info_part top selected';
-    this.nicknameField.style.textAlign = 'center'; // XXX
-    this.nicknameField.innerHTML = 'martinvl'; // XXX
-    this.configView.appendChild(this.nicknameField);
-
-    this.languageField = document.createElement('div');
-    this.languageField.className = 'info_part middle';
-    this.languageField.style.textAlign = 'center'; // XXX
-    this.languageField.innerHTML = 'Java'; // XXX
-    this.configView.appendChild(this.languageField);
-
-    this.editorStyleField = document.createElement('div');
-    this.editorStyleField.className = 'info_part bottom';
-    this.editorStyleField.style.textAlign = 'center'; // XXX
-    this.editorStyleField.innerHTML = 'Vim'; // XXX
-    this.configView.appendChild(this.editorStyleField);
 };
 
 CodeScorer.prototype.setupStatusView = function () {
@@ -167,33 +137,20 @@ CodeScorer.prototype.setupStatusView = function () {
     this.statusView.appendChild(header);
 
     var submissionField = document.createElement('div');
-    submissionField.className = 'info_part top selected';
-    this.submissionIndicator = document.createElement('div');
-    submissionField.appendChild(this.submissionIndicator);
-    submissionField.appendChild(document.createTextNode('Submission'));
+    submissionField.className = 'info';
+    this.statusIndicator = document.createElement('div');
+    this.statusBox = document.createElement('div');
+    this.statusBox.innerHTML = '';
+    submissionField.appendChild(this.statusIndicator);
+    submissionField.appendChild(this.statusBox);
+    this.resetStatus();
     this.statusView.appendChild(submissionField);
-
-    var compilationField = document.createElement('div');
-    compilationField.className = 'info_part middle selected';
-    this.compilationIndicator = document.createElement('div');
-    compilationField.appendChild(this.compilationIndicator);
-    compilationField.appendChild(document.createTextNode('Compilation'));
-    this.statusView.appendChild(compilationField);
-
-    var testingField = document.createElement('div');
-    testingField.className = 'info_part bottom selected';
-    this.testingIndicator = document.createElement('div');
-    testingField.appendChild(this.testingIndicator);
-    testingField.appendChild(document.createTextNode('Testing'));
-    this.statusView.appendChild(testingField);
 };
 
 // ----- Setters -----
 CodeScorer.prototype.setPlayer = function (player) {
     this.player = player || {};
     this.sendHandshake();
-
-    this.nicknameField.innerHTML = this.player.nickname || '';
 };
 
 CodeScorer.prototype.setLanguage = function (language) {
@@ -221,8 +178,6 @@ CodeScorer.prototype.setLanguage = function (language) {
 
     this.editor.setOption('mode', mode);
     this.editor.setValue(defaultCode);
-
-    this.languageField.innerHTML = languageName;
 };
 
 CodeScorer.prototype.setEditorStyle = function (editorStyle) {
@@ -245,8 +200,6 @@ CodeScorer.prototype.setEditorStyle = function (editorStyle) {
 
     this.editor.setOption('keyMap', keyMap);
     this.editor.setOption('vimMode', editorStyle === 'vim');
-
-    this.editorStyleField.innerHTML = editorName;
 };
 
 CodeScorer.prototype.reset = function () {
@@ -270,9 +223,7 @@ CodeScorer.prototype.refresh = function () {
 };
 
 CodeScorer.prototype.resetStatus = function () {
-    updateIndicator(this.submissionIndicator, 'failed');
-    updateIndicator(this.compilationIndicator, 'failed');
-    updateIndicator(this.testingIndicator, 'failed');
+    this.updateIndicator('idle', 'Idle');
 };
 
 // ----- State handling -----
@@ -291,10 +242,6 @@ CodeScorer.prototype.updateCharCount = function () {
 
 CodeScorer.prototype.submit = function () {
     this.setLocked(true);
-
-    updateIndicator(this.submissionIndicator, 'pending');
-    updateIndicator(this.compilationIndicator, 'failed');
-    updateIndicator(this.testingIndicator, 'failed');
 
     this.sendCodeBody();
 };
@@ -320,28 +267,7 @@ CodeScorer.prototype.setupConnection = function () {
 
     var self = this;
     this.socket.on('status', function (payload) {
-        var indicator;
-        switch (payload.mode) {
-            case 'submission':
-                indicator = self.submissionIndicator;
-                break;
-            case 'compilation':
-                indicator = self.compilationIndicator;
-                break;
-            case 'testing':
-                indicator = self.testingIndicator;
-                break;
-        }
-
-        var status = 'failed';
-
-        if (payload.success) {
-            status = 'success';
-        } else if (payload.pending) {
-            status = 'pending';
-        }
-
-        updateIndicator(indicator, status);
+        self.updateIndicator(payload.status, payload.message);
     });
 
     this.socket.on('result', function (result) {
@@ -361,29 +287,23 @@ CodeScorer.prototype.sendHandshake = function () {
 
 CodeScorer.prototype.sendCodeBody = function () {
     this.socket.emit('evaluate', {
-        problemID:this.problem.ID,
-        language:this.language,
-        impTime:this.timerView.getTime(),
-        codeBody:this.editor.getValue()
+        problemID: this.problem.id,
+        language: this.language,
+        impTime:  this.timerView.getTime(),
+        // These spaces are invisible and make compiler errors. Annoying!
+        codeBody: this.editor.getValue().replace(/\xa0/g, ' ')
     });
 };
 
-function updateIndicator(indicator, mode) {
+CodeScorer.prototype.updateIndicator = function(mode, text) {
     var className = 'status_light ';
 
-    switch (mode) {
-        case 'success':
-            className += 'green';
-            break;
-        case 'pending':
-            className += 'yellow';
-            break;
-        case 'failed':
-            className += 'red';
-            break;
-    }
+    // Should produce errors too
+    className += {idle: 'gray', success: 'green', pending: 'yellow', failed: 'red'}[mode];
 
-    indicator.className = className;
+    this.statusIndicator.className = className;
+
+    this.statusBox.innerHTML = text.replace(/\n/g, '<br />\n');
 }
 
 function createClear() {

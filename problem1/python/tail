@@ -1,0 +1,10 @@
+
+n = int(stdin.read())
+
+start = time();
+result = D(n)
+end = time();
+
+running_time = end - start
+stdout.write('%ld\n' % result);
+stderr.write('%f\n' % running_time);
